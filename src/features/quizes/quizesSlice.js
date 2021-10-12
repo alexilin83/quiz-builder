@@ -3,6 +3,8 @@ const initialState = [
         id: 0,
         title: "Quiz 1",
         lead: "Let's start",
+        photo: "https://cdn2.thecatapi.com/images/34l.jpg",
+        photoAuthor: "TheCatApi",
         questions: [
             {
                 title: "Question 1",

@@ -1,3 +1,40 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+    body {
+        @apply text-gray-500;
+    }
+}
+
+@layer components {
+    .nav-link_active {
+        @apply text-gray-600;
+    }
+    .btn {
+        @apply py-2 px-4 bg-green-400 text-white font-semibold rounded-md shadow-md hover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75;
+    }
+    .control {
+        @apply flex py-5 border-b-2 border-gray-100;
+    }
+    .control__label {
+        @apply w-1/4 mt-2;
+    }
+    .control__input {
+        @apply w-3/4;
+    }
+    .label {
+        @apply font-bold;
+    }
+    .input-text,
+    .input-textarea {
+        @apply block w-full shadow-sm border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500;
+    }
+    .thumb {
+        @apply overflow-hidden w-60 rounded-lg
+    }
+    .thumb__img {
+        @apply object-cover
+    }
+}

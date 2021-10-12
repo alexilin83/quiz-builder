@@ -3,6 +3,7 @@ const path = require("path");
 module.exports = {
     devServer: {
         open: true,
+        historyApiFallback: true,
         devMiddleware: {
             publicPath: "/dist"
         }
