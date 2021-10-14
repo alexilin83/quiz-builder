@@ -4,7 +4,13 @@
 
 @layer base {
     body {
-        @apply text-gray-500;
+        @apply bg-gray-100 text-gray-500;
+    }
+    h2 {
+        @apply m-0 mb-5 font-bold text-xl text-gray-600
+    }
+    h3 {
+        @apply font-medium text-gray-600
     }
 }
 
@@ -15,17 +21,8 @@
     .btn {
         @apply py-2 px-4 bg-green-400 text-white font-semibold rounded-md shadow-md hover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75;
     }
-    .control {
-        @apply flex py-5 border-b-2 border-gray-100;
-    }
-    .control__label {
-        @apply w-1/4 mt-2;
-    }
-    .control__input {
-        @apply w-3/4;
-    }
     .label {
-        @apply font-bold;
+        @apply block mb-1 text-sm font-medium text-gray-600;
     }
     .input-text,
     .input-textarea {
@@ -36,5 +33,11 @@
     }
     .thumb__img {
         @apply object-cover
+    }
+    .question {
+        @apply py-5 border-t-2 border-gray-50;
+    }
+    .question:first-child {
+        @apply border-t-0;
     }
 }

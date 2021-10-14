@@ -7,6 +7,7 @@ const initialState = [
         photoAuthor: "TheCatApi",
         questions: [
             {
+                id: 0,
                 title: "Question 1",
                 photo: "https://cdn2.thecatapi.com/images/34l.jpg",
                 photoAuthor: "TheCatApi",
@@ -19,6 +20,7 @@ const initialState = [
                 correct: 2
             },
             {
+                id: 1,
                 title: "Question 2",
                 photo: "https://cdn2.thecatapi.com/images/qr.jpg",
                 photoAuthor: "",
@@ -31,6 +33,7 @@ const initialState = [
                 correct: 3
             },
             {
+                id: 2,
                 title: "Question 3",
                 photo: "",
                 photoAuthor: "",
@@ -50,6 +53,7 @@ const initialState = [
         lead: "Let's move",
         questions: [
             {
+                id: 3,
                 title: "Question 1",
                 photo: "https://cdn2.thecatapi.com/images/2mb.jpg",
                 photoAuthor: "TheCatApi",
@@ -62,6 +66,7 @@ const initialState = [
                 correct: 4
             },
             {
+                id: 4,
                 title: "Question 2",
                 photo: "https://cdn2.thecatapi.com/images/BjXI8y9gY.jpg",
                 photoAuthor: "",
