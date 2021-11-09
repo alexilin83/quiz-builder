@@ -1,5 +1,5 @@
 import React from 'react';
-import { Switch, Route, Link, NavLink } from "react-router-dom";
+import { Routes, Route, Link, NavLink } from "react-router-dom";
 import { TemplateIcon } from '@heroicons/react/outline';
 import QuizList from './features/quizes/QuizList';
 import Quiz from './features/quizes/Quiz';
@@ -14,8 +14,8 @@ const App = () => (
                         <h1 className="text-xl font-black text-gray-600">Конструктор тестов</h1>
                     </div>
                     <nav className="flex justify-center w-2/6 space-x-6 font-bold text-gray-400">
-                        <NavLink exact to="/" activeClassName="nav-link_active">Тесты</NavLink>
-                        <NavLink to="/new" activeClassName="nav-link_active">Создать тест</NavLink>
+                        <NavLink end to="/" className={({ isActive }) => "nav-link" + (isActive ? " _active" : "")}>Тесты</NavLink>
+                        <NavLink to="/new" className={({ isActive }) => "nav-link" + (isActive ? " _active" : "")}>Создать тест</NavLink>
                     </nav>
                     <div className="flex justify-end w-2/6">
                         <Link to="/login" className="btn">Войти</Link>
@@ -24,10 +24,10 @@ const App = () => (
             </div>
         </div>
         <div className="container mx-auto py-7">
-            <Switch>
-                <Route exact path="/" component={QuizList} />
-                <Route path="/quiz/:id" component={Quiz} />
-            </Switch>
+            <Routes>
+                <Route path="/" element={<QuizList />} />
+                <Route path="/quiz/:id" element={<Quiz />} />
+            </Routes>
         </div>
     </React.Fragment>
 )
