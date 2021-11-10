@@ -1,6 +1,6 @@
-CREATE TABLE IF NOT EXISTS `quizes` (
+CREATE TABLE IF NOT EXISTS `quizes-items` (
     `id` int(11) NOT NULL AUTO_INCREMENT,
-    `title` varchar(50) NOT NULL,
-    `lead` varchar(50) NOT NULL,
+    `title` varchar(50) NOT NULL default '',
+    `lead` varchar(200) NOT NULL default '',
     PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
