@@ -1,9 +1,22 @@
 import React from 'react';
-import { useSelector } from 'react-redux';
+import { useSelector, shallowEqual } from 'react-redux';
 import { Link } from "react-router-dom";
+import Loader from '../loader/Loader';
+
+const selectQuizes = state => state.quizes.entities.map(quiz => {
+        return {
+            id: quiz.id,
+            title: quiz.title
+        }
+    });
 
 const QuizList = () => {
-    const quizes = useSelector(state => state.quizes);
+    const quizes = useSelector(selectQuizes, shallowEqual);
+    const loadingStatus = useSelector(state => state.quizes.status);
+
+    if (loadingStatus === 'loading') {
+        return <Loader />
+    }
 
     return (
         <div className="flex gap-4">

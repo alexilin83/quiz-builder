@@ -1,18 +1,9 @@
 import { createStore, applyMiddleware } from 'redux';
+import thunkMiddleware from 'redux-thunk';
 import rootReducer from './reducer';
-import { logger } from './middleware';
 
-let preloadedState;
-const persistedQuizesString = localStorage.getItem('quizes');
+const middlewareEnhancer = applyMiddleware(thunkMiddleware);
 
-if (persistedQuizesString) {
-    preloadedState = {
-        quizes: JSON.parse(persistedQuizesString)
-    }
-}
-
-const middlewareEnhancer = applyMiddleware(logger);
-
-const store = createStore(rootReducer, preloadedState, middlewareEnhancer);
+const store = createStore(rootReducer, middlewareEnhancer);
 
 export default store;

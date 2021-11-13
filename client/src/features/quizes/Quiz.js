@@ -1,30 +1,37 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useParams } from "react-router-dom";
 import Question from '../questions/Question';
+import Loader from '../loader/Loader';
+import { selectQuizById } from './quizesSlice';
 
 const Quiz = () => {
     let { id } = useParams();
-    const quizes = useSelector(state => state.quizes);
-    const quiz = quizes.find(quiz => quiz.id == id);
-
-    const [title, setTitle] = useState(quiz.title);
-    const [lead, setLead] = useState(quiz.lead);
-    const [photo, setPhoto] = useState(quiz.photo);
-    const [photoAuthor, setPhotoAuthor] = useState(quiz.photoAuthor);
-    const [questions, setQuestions] = useState(quiz.questions);
+    const loadingStatus = useSelector(state => state.quizes.status);
+    const quiz = useSelector(state => selectQuizById(state, id));
+    
+    const { title, description, image, imageSource, questions} = quiz;
+    
     const dispatch = useDispatch();
 
     function handleTitleChange(e) {
-        setTitle(e.target.value);
+        // setTitle(e.target.value);
     }
 
-    function handleLeadChange(e) {
-        setLead(e.target.value);
+    function handleDescriptionChange(e) {
+        // setDescription(e.target.value);
     }
 
-    function handlePhotoAuthorChange(e) {
-        setPhotoAuthor(e.target.value);
+    function handleImageChange(e) {
+        // setImage(e.target.value);
+    }
+
+    function handleImageSourceChange(e) {
+        // setImageSource(e.target.value);
+    }
+
+    if (loadingStatus === 'loading') {
+        return <Loader />
     }
 
     return (
@@ -36,15 +43,16 @@ const Quiz = () => {
                         <label className="label">Название</label>
                         <input type="text" className="input-text mb-5" value={title} onChange={handleTitleChange} />
                         <label className="label">Описание</label>
-                        <textarea className="input-textarea h-40" value={lead} onChange={handleLeadChange} />
+                        <textarea className="input-textarea h-40" value={description} onChange={handleDescriptionChange} />
                     </div>
                     <div className="col-span-3">
                         <label className="label">Главное изображение</label>
+                        <input type="text" className="input-text mb-2" value={image} onChange={handleImageChange} />
                         <div className="thumb mb-5">
-                            <img className="thumb__img" src={photo} />
+                            <img className="thumb__img" src={image} />
                         </div>
                         <label className="label">Источник изображения</label>
-                        <input type="text" className="input-text" value={photoAuthor} onChange={handlePhotoAuthorChange} />
+                        <input type="text" className="input-text" value={imageSource} onChange={handleImageSourceChange} />
                     </div>
                 </div>
                 <h2>Вопросы</h2>

@@ -1,119 +1,104 @@
-const initialState = [
-    {
-        id: 0,
-        title: "Quiz 1",
-        lead: "Let's start",
-        photo: "https://cdn2.thecatapi.com/images/34l.jpg",
-        photoAuthor: "TheCatApi",
-        questions: [
-            {
-                id: 0,
-                title: "Question 1",
-                photo: "https://cdn2.thecatapi.com/images/34l.jpg",
-                photoAuthor: "TheCatApi",
-                variants: [
-                    "Variant 1",
-                    "Variant 2",
-                    "Variant 3",
-                    "Variant 4"
-                ],
-                correct: 2
-            },
-            {
-                id: 1,
-                title: "Question 2",
-                photo: "https://cdn2.thecatapi.com/images/qr.jpg",
-                photoAuthor: "",
-                variants: [
-                    "Variant 1",
-                    "Variant 2",
-                    "Variant 3",
-                    "Variant 4"
-                ],
-                correct: 3
-            },
-            {
-                id: 2,
-                title: "Question 3",
-                photo: "",
-                photoAuthor: "",
-                variants: [
-                    "Variant 1",
-                    "Variant 2",
-                    "Variant 3",
-                    "Variant 4"
-                ],
-                correct: 1
-            }
-        ]
-    },
-    {
-        id: 1,
-        title: "Quiz 2",
-        lead: "Let's move",
-        questions: [
-            {
-                id: 3,
-                title: "Question 1",
-                photo: "https://cdn2.thecatapi.com/images/2mb.jpg",
-                photoAuthor: "TheCatApi",
-                variants: [
-                    "Variant 1",
-                    "Variant 2",
-                    "Variant 3",
-                    "Variant 4"
-                ],
-                correct: 4
-            },
-            {
-                id: 4,
-                title: "Question 2",
-                photo: "https://cdn2.thecatapi.com/images/BjXI8y9gY.jpg",
-                photoAuthor: "",
-                variants: [
-                    "Variant 1",
-                    "Variant 2",
-                    "Variant 3",
-                    "Variant 4"
-                ],
-                correct: 2
-            }
-        ]
-    }
-]
-
-function nextQuizId(quizes) {
-    const maxId = quizes.reduce((maxId, quiz) => Math.max(quiz.id, maxId), -1);
-    return maxId + 1;
-}
+const initialState = {
+    status: 'idle',
+    entities: []
+};
 
 export default function quizesReducer(state = initialState, action) {
     switch (action.type) {
-        case "quizes/quizAdded": {
-            return [
+        case "quizes/quizesLoading": {
+            return {
                 ...state,
-                {
-                    id: nextQuizId(state),
-                    title: action.payload.title,
-                    lead: action.payload.lead,
-                    questions: action.payload.questions
-                }
-            ]
+                status: 'loading'
+            }
+        }
+        case "quizes/quizesLoaded": {
+            return {
+                ...state,
+                status: 'idle',
+                entities: action.payload
+            };
+        }
+        case "quizes/quizAdded": {
+            return {
+                ...state,
+                entities: [...state.entities, action.payload]
+            }
         }
         case "quizes/quizChanged": {
-            return state.map(quiz => {
-                if (quiz.id !== action.payload.id) {
-                    return quiz;
-                }
-                return {
-                    ...quiz,
-                    title: action.payload.title,
-                    lead: action.payload.lead,
-                    questions: action.payload.questions
-                }
-            })
+            return {
+                ...state,
+                entities: state.entities.map(quiz => {
+                    if (quiz.id !== action.payload.id) {
+                        return quiz;
+                    }
+                    return {
+                        ...quiz,
+                        title: action.payload.title,
+                        description: action.payload.description,
+                        image: action.payload.image,
+                        imageSource: action.payload.imageSource,
+                        questions: action.payload.questions
+                    }
+                })
+            }
         }
         default:
             return state
     }
+}
+
+
+export const quizesLoading = () => {
+    return {
+        type: 'quizes/quizesLoading'
+    }
+}
+
+export const quizesLoaded = quizes => {
+    return {
+        type: 'quizes/quizesLoaded',
+        payload: quizes
+    }
+}
+
+export function fetchQuizes() {
+    return async function fetchQuizesthunk(dispatch, getState) {
+        dispatch(quizesLoading());
+        await fetch('/api/get')
+            .then(response => {
+                return response.json();
+            })
+            .then(data => {
+                dispatch(quizesLoaded(data))
+            });
+    }
+}
+
+export const quizAdded = quiz => {
+    return {
+        type: 'quizes/quizAdded',
+        payload: quiz
+    }
+}
+
+export function saveNewQuiz(quiz) {
+    return async function saveNewQuizthunk(dispatch, getState) {
+        await fetch('/api/insert', {
+            body: JSON.stringify(quiz)
+        })
+            .then(response => {
+                return response.json();
+            })
+            .then(data => {
+                dispatch(quizAdded(data))
+            });
+    }
+}
+
+export function selectQuizes(state) {
+    return state.quizes.entities;
+}
+
+export function selectQuizById(state, quizId) {
+    return selectQuizes(state).find(quiz => quiz.id === quizId);
 }

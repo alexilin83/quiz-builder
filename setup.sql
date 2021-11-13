@@ -1,6 +1,61 @@
-CREATE TABLE IF NOT EXISTS `quizes-items` (
-    `id` int(11) NOT NULL AUTO_INCREMENT,
-    `title` varchar(50) NOT NULL default '',
-    `lead` varchar(200) NOT NULL default '',
-    PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+CREATE TABLE IF NOT EXISTS quizes_items (
+    id INT(11) NOT NULL AUTO_INCREMENT,
+    title VARCHAR(50) NOT NULL DEFAULT '',
+    description VARCHAR(255) NOT NULL DEFAULT '',
+    image VARCHAR(100) NOT NULL DEFAULT '',
+    imageSource VARCHAR(50) NOT NULL DEFAULT '',
+    PRIMARY KEY (id)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8 COLLATE = utf8_general_ci;
+
+CREATE TABLE IF NOT EXISTS quizes_questions (
+    id INT(11) NOT NULL AUTO_INCREMENT,
+    quiz_id INT(11) NOT NULL,
+    title VARCHAR(100) NOT NULL DEFAULT '',
+    image VARCHAR(100) NOT NULL DEFAULT '',
+    imageSource VARCHAR(50) NOT NULL DEFAULT '',
+    PRIMARY KEY (id),
+    FOREIGN KEY (quiz_id) REFERENCES quizes_items(id) ON DELETE CASCADE
+) ENGINE = InnoDB DEFAULT CHARSET = utf8 COLLATE = utf8_general_ci;
+
+CREATE TABLE IF NOT EXISTS quizes_answers (
+    id INT(11) NOT NULL AUTO_INCREMENT,
+    question_id INT(11) NOT NULL,
+    title VARCHAR(100) NOT NULL DEFAULT '',
+    PRIMARY KEY (id),
+    FOREIGN KEY (question_id) REFERENCES quizes_questions(id) ON DELETE CASCADE
+) ENGINE = InnoDB DEFAULT CHARSET = utf8 COLLATE = utf8_general_ci;
+
+INSERT INTO
+    quizes_items (
+        title,
+        description,
+        image,
+        imageSource
+    )
+VALUES
+    (
+        "Quiz 1",
+        "Let's start",
+        "https://picsum.photos/600/400",
+        "Lorem Picsum"
+    );
+
+INSERT INTO
+    quizes_questions (
+        quiz_id,
+        title,
+        image,
+        imageSource
+    )
+VALUES
+    (
+        "1",
+        "Question 1",
+        "https://picsum.photos/600/400",
+        "Lorem Picsum"
+    );
+
+INSERT INTO
+    quizes_answers (question_id, title)
+VALUES
+    ("1", "Answer 1");

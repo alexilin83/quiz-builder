@@ -15,7 +15,7 @@ const App = () => (
                     </div>
                     <nav className="flex justify-center w-2/6 space-x-6 font-bold text-gray-400">
                         <NavLink end to="/" className={({ isActive }) => "nav-link" + (isActive ? " _active" : "")}>Тесты</NavLink>
-                        <NavLink to="/new" className={({ isActive }) => "nav-link" + (isActive ? " _active" : "")}>Создать тест</NavLink>
+                        <NavLink to="/quiz/new" className={({ isActive }) => "nav-link" + (isActive ? " _active" : "")}>Создать тест</NavLink>
                     </nav>
                     <div className="flex justify-end w-2/6">
                         <Link to="/login" className="btn">Войти</Link>
@@ -27,6 +27,7 @@ const App = () => (
             <Routes>
                 <Route path="/" element={<QuizList />} />
                 <Route path="/quiz/:id" element={<Quiz />} />
+                <Route path="/quiz/new" element={<Quiz />} />
             </Routes>
         </div>
     </React.Fragment>

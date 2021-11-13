@@ -1,6 +1,7 @@
 const express = require('express');
 const mysql = require('mysql2');
 const cors = require('cors');
+const app = express();
 
 const db = mysql.createPool({
     host: 'mysql_db',
@@ -8,8 +9,6 @@ const db = mysql.createPool({
     password: 'MYSQL_PASSWORD',
     database: 'quizes'
 });
-
-const app = express();
 
 app.use(cors());
 app.use(express.json());
@@ -20,25 +19,26 @@ app.get('/', (req, res) => {
 });
 
 app.get('/get', (req, res) => {
-    const SelectQuery = "SELECT * FROM quizes-items";
+    const SelectQuery = "SELECT * FROM quizes_items";
     db.query(SelectQuery, (err, result) => {
-        console.log('res: ', result);
         res.send(result);
     });
 });
 
 app.post('/insert', (req, res) => {
     const title = req.body.title;
-    const lead = req.body.lead;
-    const InsertQuery = "INSERT INTO quizes-items (title, lead) VALUES (?, ?)";
-    db.query(InsertQuery, [title, lead], (err, result) => {
-        console.log(result);
+    const description = req.body.description;
+    const image = req.body.image;
+    const imageSource = req.body.imageSource;
+    const InsertQuery = "INSERT INTO quizes_items (title, description, image, imageSource) VALUES (?, ?, ?, ?)";
+    db.query(InsertQuery, [title, description, image, imageSource], (err, result) => {
+        res.send(result);
     });
 });
 
 app.delete('/delete/:quizId', (req, res) => {
     const quizId = req.params.quizId;
-    const DeleteQuery = "DELETE FROM quizes-items WHERE id = ?";
+    const DeleteQuery = "DELETE FROM quizes_items WHERE id = ?";
     db.query(DeleteQuery, quizId, (err, result) => {
         if (err) console.log(err);
     });
@@ -47,9 +47,11 @@ app.delete('/delete/:quizId', (req, res) => {
 app.put('/update/:quizId', (req, res) => {
     const quizId = req.params.quizId;
     const title = req.body.title;
-    const lead = req.body.lead;
-    const UpdateQuery = "UPDATE quizes-items SET title = ? lead = ? WHERE id = ?";
-    db.query(UpdateQuery, [title, lead, quizId], (err, result) => {
+    const description = req.body.description;
+    const image = req.body.image;
+    const imageSource = req.body.imageSource;
+    const UpdateQuery = "UPDATE quizes_items SET title = ? description = ? image = ? imageSource = ? WHERE id = ?";
+    db.query(UpdateQuery, [title, description, image, imageSource, quizId], (err, result) => {
         if (err) console.log(err);
     });
 });
