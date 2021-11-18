@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 const Question = props => {
     const [expanded, setExpanded] = useState(false);
     const [title, setTitle] = useState(props.question.title);
-    const [variants, setVariants] = useState(props.question.variants);
+    const [answers, setAnswers] = useState(props.question.answers);
 
     const variantWords = ["ответ", "ответа", "ответов"];
 
@@ -17,7 +17,7 @@ const Question = props => {
                 <div className="px-5 text-xl font-bold">{props.number}</div>
                 <div className="leading-tight">
                     <h3 className="m-0">{title}</h3>
-                    <p className="text-sm">{variants.length} {declOfNum(variants.length, variantWords)}</p>
+                    <p className="text-sm">{answers.length} {declOfNum(answers.length, variantWords)}</p>
                 </div>
             </header>
             {expanded &&

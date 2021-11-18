@@ -35,9 +35,9 @@ INSERT INTO
 VALUES
     (
         "Quiz 1",
-        "Let's start",
+        "Quiz 1 description",
         "https://picsum.photos/600/400",
-        "Lorem Picsum"
+        "Quiz 1 image source"
     );
 
 INSERT INTO
@@ -52,7 +52,35 @@ VALUES
         "1",
         "Question 1",
         "https://picsum.photos/600/400",
-        "Lorem Picsum"
+        "Question 1 image source"
+    );
+INSERT INTO
+    quizes_questions (
+        quiz_id,
+        title,
+        image,
+        imageSource
+    )
+VALUES
+    (
+        "1",
+        "Question 2",
+        "https://picsum.photos/600/400",
+        "Question 2 image source"
+    );
+INSERT INTO
+    quizes_questions (
+        quiz_id,
+        title,
+        image,
+        imageSource
+    )
+VALUES
+    (
+        "2",
+        "Question 3",
+        "https://picsum.photos/600/400",
+        "Question 3 image source"
     );
 
 INSERT INTO

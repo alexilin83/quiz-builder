@@ -9,28 +9,48 @@ const Quiz = () => {
     let { id } = useParams();
     const loadingStatus = useSelector(state => state.quizes.status);
     const quiz = useSelector(state => selectQuizById(state, id));
-    
-    const { title, description, image, imageSource, questions} = quiz;
-    
+
     const dispatch = useDispatch();
 
+    const [title, setTitle] = useState('');
+    const [description, setDescription] = useState('');
+    const [image, setImage] = useState('');
+    const [imageSource, setImageSource] = useState('');
+    const [questions, setQuestions] = useState([]);
+
+    useEffect(() => {
+        if (quiz) {
+            setTitle(quiz.title);
+            setDescription(quiz.description);
+            setImage(quiz.image);
+            setImageSource(quiz.imageSource);
+            setQuestions(quiz.questions);
+        } else {
+            setTitle('');
+            setDescription('');
+            setImage('');
+            setImageSource('');
+            setQuestions([]);
+        }
+    }, [quiz]);
+
     function handleTitleChange(e) {
-        // setTitle(e.target.value);
+        setTitle(e.target.value);
     }
 
     function handleDescriptionChange(e) {
-        // setDescription(e.target.value);
+        setDescription(e.target.value);
     }
 
     function handleImageChange(e) {
-        // setImage(e.target.value);
+        setImage(e.target.value);
     }
 
     function handleImageSourceChange(e) {
-        // setImageSource(e.target.value);
+        setImageSource(e.target.value);
     }
 
-    if (loadingStatus === 'loading') {
+    if (loadingStatus === 'loading' && id) {
         return <Loader />
     }
 
@@ -49,7 +69,7 @@ const Quiz = () => {
                         <label className="label">Главное изображение</label>
                         <input type="text" className="input-text mb-2" value={image} onChange={handleImageChange} />
                         <div className="thumb mb-5">
-                            <img className="thumb__img" src={image} />
+                            <img className="thumb__img" src={image} alt="" />
                         </div>
                         <label className="label">Источник изображения</label>
                         <input type="text" className="input-text" value={imageSource} onChange={handleImageSourceChange} />

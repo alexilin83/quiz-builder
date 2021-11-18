@@ -1,6 +1,8 @@
 const initialState = {
     status: 'idle',
-    entities: []
+    entities: [],
+    questions: [],
+    answers: []
 };
 
 export default function quizesReducer(state = initialState, action) {
@@ -54,22 +56,24 @@ export const quizesLoading = () => {
     }
 }
 
-export const quizesLoaded = quizes => {
+export const quizesLoaded = data => {
     return {
         type: 'quizes/quizesLoaded',
-        payload: quizes
+        payload: data
     }
 }
 
 export function fetchQuizes() {
-    return async function fetchQuizesthunk(dispatch, getState) {
+    return async function fetchQuizesThunk(dispatch, getState) {
         dispatch(quizesLoading());
         await fetch('/api/get')
             .then(response => {
                 return response.json();
             })
             .then(data => {
-                dispatch(quizesLoaded(data))
+                setTimeout(() => {
+                    dispatch(quizesLoaded(data));
+                }, 1000)
             });
     }
 }
@@ -100,5 +104,5 @@ export function selectQuizes(state) {
 }
 
 export function selectQuizById(state, quizId) {
-    return selectQuizes(state).find(quiz => quiz.id === quizId);
+    return selectQuizes(state).find(quiz => quiz.id === parseInt(quizId));
 }

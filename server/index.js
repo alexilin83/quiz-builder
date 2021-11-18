@@ -19,9 +19,43 @@ app.get('/', (req, res) => {
 });
 
 app.get('/get', (req, res) => {
-    const SelectQuery = "SELECT * FROM quizes_items";
-    db.query(SelectQuery, (err, result) => {
-        res.send(result);
+    let quizes = [];
+    let questions = [];
+    let answers = [];
+    Promise.all([
+        db.promise().query("SELECT * FROM quizes_items")
+        .then(([rows]) => {
+            quizes = rows;
+        }),
+        db.promise().query("SELECT * FROM quizes_questions")
+        .then(([rows]) => {
+            questions = rows;
+        }),
+        db.promise().query("SELECT * FROM quizes_answers")
+        .then(([rows]) => {
+            answers = rows;
+        })
+    ])
+    .then(() => {
+        questions = questions.map(question => {
+            question.answers = [];
+            answers.forEach(answer => {
+                if (answer.question_id === question.id) {
+                    question.answers.push(answer);
+                }
+            });
+            return question;
+        });
+        quizes = quizes.map(quiz => {
+            quiz.questions = [];
+            questions.forEach(question => {
+                if (question.quiz_id === quiz.id) {
+                    quiz.questions.push(question);
+                }
+            });
+            return quiz;
+        });
+        res.send(quizes);
     });
 });
 
