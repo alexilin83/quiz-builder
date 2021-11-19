@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useParams } from "react-router-dom";
+import { v4 as uuidv4 } from 'uuid';
 import Question from '../questions/Question';
 import Loader from '../loader/Loader';
 import { selectQuizById } from './quizesSlice';
@@ -50,6 +51,36 @@ const Quiz = () => {
         setImageSource(e.target.value);
     }
 
+    function handleAddQuestion() {
+        setQuestions([...questions, {
+            id: uuidv4(),
+            pos: questions.length,
+            title: 'Новый вопрос',
+            image: '',
+            answers: [],
+            isExpanded: true
+        }]);
+    }
+
+    function handleDeleteQuestion(id, e) {
+        e.stopPropagation();
+        let newQuestions = questions.filter(question => {
+            if (question.id !== id) {
+                return true;
+            }
+            return false;
+        });
+        setQuestions(newQuestions);
+    }
+
+    function handleQuestionTitleChange(id, e) {
+
+    }
+
+    function handleQuestionImageChange(id, e) {
+        
+    }
+
     if (loadingStatus === 'loading' && id) {
         return <Loader />
     }
@@ -60,7 +91,7 @@ const Quiz = () => {
                 <h2>Параметры</h2>
                 <div className="grid grid-cols-6 gap-6 mb-12">
                     <div className="col-span-3">
-                        <label className="label">Название</label>
+                        <label className="label">Заголовок</label>
                         <input type="text" className="input-text mb-5" value={title} onChange={handleTitleChange} />
                         <label className="label">Описание</label>
                         <textarea className="input-textarea h-40" value={description} onChange={handleDescriptionChange} />
@@ -77,10 +108,11 @@ const Quiz = () => {
                 </div>
                 <h2>Вопросы</h2>
                 <div>
-                    {questions.map((question, i) => <Question question={question} key={question.id} number={i + 1} />)}
+                    {questions.map((question, i) => <Question question={question} key={question.id} index={i} onDelete={handleDeleteQuestion} onTitleChange={handleQuestionTitleChange} onImageChange={handleQuestionImageChange} />)}
+                    <button type="button" className="btn btn_secondary mt-5" onClick={handleAddQuestion}>Добавить</button>
                 </div>
             </div>
-            <div className="px-10 py-5 bg-gray-50 text-right">
+            <div className="px-10 py-5 bg-gray-50">
                 <button type="submit" className="btn">Сохранить</button>
             </div>
         </form>

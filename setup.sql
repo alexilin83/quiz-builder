@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS quizes_items (
 CREATE TABLE IF NOT EXISTS quizes_questions (
     id INT(11) NOT NULL AUTO_INCREMENT,
     quiz_id INT(11) NOT NULL,
+    pos INT(11) NOT NULL,
     title VARCHAR(100) NOT NULL DEFAULT '',
     image VARCHAR(100) NOT NULL DEFAULT '',
     imageSource VARCHAR(50) NOT NULL DEFAULT '',
@@ -20,6 +21,7 @@ CREATE TABLE IF NOT EXISTS quizes_questions (
 CREATE TABLE IF NOT EXISTS quizes_answers (
     id INT(11) NOT NULL AUTO_INCREMENT,
     question_id INT(11) NOT NULL,
+    pos INT(11) NOT NULL,
     title VARCHAR(100) NOT NULL DEFAULT '',
     PRIMARY KEY (id),
     FOREIGN KEY (question_id) REFERENCES quizes_questions(id) ON DELETE CASCADE
@@ -41,8 +43,24 @@ VALUES
     );
 
 INSERT INTO
+    quizes_items (
+        title,
+        description,
+        image,
+        imageSource
+    )
+VALUES
+    (
+        "Quiz 2",
+        "Quiz 2 description",
+        "https://picsum.photos/600/400",
+        "Quiz 2 image source"
+    );
+
+INSERT INTO
     quizes_questions (
         quiz_id,
+        pos,
         title,
         image,
         imageSource
@@ -50,27 +68,33 @@ INSERT INTO
 VALUES
     (
         "1",
+        "0",
         "Question 1",
         "https://picsum.photos/600/400",
         "Question 1 image source"
     );
+
 INSERT INTO
     quizes_questions (
         quiz_id,
+        pos,
         title,
         image,
         imageSource
     )
 VALUES
     (
+        "1",
         "1",
         "Question 2",
         "https://picsum.photos/600/400",
         "Question 2 image source"
     );
+
 INSERT INTO
     quizes_questions (
         quiz_id,
+        pos,
         title,
         image,
         imageSource
@@ -78,12 +102,22 @@ INSERT INTO
 VALUES
     (
         "2",
+        "1",
         "Question 3",
         "https://picsum.photos/600/400",
         "Question 3 image source"
     );
 
+
 INSERT INTO
-    quizes_answers (question_id, title)
+    quizes_answers (
+        question_id,
+        pos,
+        title
+    )
 VALUES
-    ("1", "Answer 1");
+    (
+        "1",
+        "1",
+        "Answer 1"
+    );

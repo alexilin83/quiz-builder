@@ -1,29 +1,43 @@
 import React, { useState } from 'react';
+import { TrashIcon } from '@heroicons/react/outline';
 
 const Question = props => {
-    const [expanded, setExpanded] = useState(false);
-    const [title, setTitle] = useState(props.question.title);
-    const [answers, setAnswers] = useState(props.question.answers);
+    const [isExpanded, setIsExpanded] = useState(props.question.isExpanded || false);
 
-    const variantWords = ["ответ", "ответа", "ответов"];
+    const { title, image } = props.question;
 
-    function declOfNum(number, words) {  
-        return words[(number % 100 > 4 && number % 100 < 20) ? 2 : [2, 0, 1, 1, 1, 2][(number % 10 < 5) ? Math.abs(number) % 10 : 5]];
+    function handleHeaderClick() {
+        setIsExpanded(!isExpanded);
     }
 
     return (
-        <div className="question">
-            <header className="flex items-center">
-                <div className="px-5 text-xl font-bold">{props.number}</div>
-                <div className="leading-tight">
-                    <h3 className="m-0">{title}</h3>
-                    <p className="text-sm">{answers.length} {declOfNum(answers.length, variantWords)}</p>
+        <div className="mb-3 bg-gray-50 rounded-lg overflow-hidden shadow">
+            <header className={`flex items-center px-5 py-5 bg-gray-100 cursor-pointer transition hover:bg-gray-200 ${isExpanded ? 'bg-gray-200': ''}`} onClick={handleHeaderClick}>
+                <div className="flex-grow">
+                    <h3 className="m-0">
+                        <span className="inline-block pr-2 text-gray-400">{props.index + 1}</span>
+                        {title}
+                    </h3>
                 </div>
+                <button type="button" className="flex flex-grow-0 justify-center items-center transition hover:text-pink-500" onClick={e => props.onDelete(props.question.id, e)}>
+                    <TrashIcon className="h-6 w-6"/>
+                </button>
             </header>
-            {expanded &&
-                <div>
-                    <label className="label">Название</label>
-                    <input type="text" className="input-text" value={title} />
+            {isExpanded &&
+                <div className="px-10 py-8">
+                    <div className="grid grid-cols-6 gap-6">
+                        <div className="col-span-3">
+                            <label className="label">Текст</label>
+                            <input type="text" className="input-text mb-5" value={title} onChange={e => props.onTitleChange(props.question.id, e)} />
+                            <label className="label">Изображение</label>
+                            <input type="text" className="input-text mb-2" value={image} onChange={e => props.onImageChange(props.question.id, e)} />
+                            <div className="thumb">
+                                <img className="thumb__img" src={image} alt="" />
+                            </div>
+                        </div>
+                        <div className="col-span-3">
+                        </div>
+                    </div>
                 </div>
             }
         </div>
