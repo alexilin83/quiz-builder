@@ -1,9 +1,10 @@
-import { createStore, applyMiddleware } from 'redux';
-import thunkMiddleware from 'redux-thunk';
-import rootReducer from './reducer';
+import { configureStore } from '@reduxjs/toolkit';
+import quizesReducer from './features/quizes/quizesSlice';
 
-const middlewareEnhancer = applyMiddleware(thunkMiddleware);
-
-const store = createStore(rootReducer, middlewareEnhancer);
+const store = configureStore({
+    reducer: {
+        quizes: quizesReducer
+    }
+});
 
 export default store;

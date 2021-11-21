@@ -1,17 +1,11 @@
 import React from 'react';
-import { useSelector, shallowEqual } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { Link } from "react-router-dom";
 import Loader from '../loader/Loader';
-
-const selectQuizes = state => state.quizes.entities.map(quiz => {
-        return {
-            id: quiz.id,
-            title: quiz.title
-        }
-    });
+import { selectQuizes } from './quizesSlice';
 
 const QuizList = () => {
-    const quizes = useSelector(selectQuizes, shallowEqual);
+    const quizes = useSelector(selectQuizes);
     const loadingStatus = useSelector(state => state.quizes.status);
 
     if (loadingStatus === 'loading') {

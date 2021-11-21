@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useParams } from "react-router-dom";
 import { v4 as uuidv4 } from 'uuid';
-import Question from '../questions/Question';
 import Loader from '../loader/Loader';
+import Question from '../questions/Question';
 import { selectQuizById } from './quizesSlice';
 
 const Quiz = () => {
@@ -57,12 +57,29 @@ const Quiz = () => {
             pos: questions.length,
             title: 'Новый вопрос',
             image: '',
-            answers: [],
-            isExpanded: true
+            answers: []
         }]);
     }
 
-    function handleDeleteQuestion(id, e) {
+    function handleQuestionTitleChange(id, e) {
+        let newQuestions = questions.map(question => {
+            if (question.id === id) {
+                question.title = e.target.value;
+            }
+            return question;
+        });
+        setQuestions(newQuestions);
+    }
+
+    function handleQuestionImageChange(id, e) {
+        
+    }
+
+    function handleAnswerChange(id, questionId, e) {
+        
+    }
+
+    function handleQuestionDelete(id, e) {
         e.stopPropagation();
         let newQuestions = questions.filter(question => {
             if (question.id !== id) {
@@ -71,14 +88,6 @@ const Quiz = () => {
             return false;
         });
         setQuestions(newQuestions);
-    }
-
-    function handleQuestionTitleChange(id, e) {
-
-    }
-
-    function handleQuestionImageChange(id, e) {
-        
     }
 
     if (loadingStatus === 'loading' && id) {
@@ -108,7 +117,9 @@ const Quiz = () => {
                 </div>
                 <h2>Вопросы</h2>
                 <div>
-                    {questions.map((question, i) => <Question question={question} key={question.id} index={i} onDelete={handleDeleteQuestion} onTitleChange={handleQuestionTitleChange} onImageChange={handleQuestionImageChange} />)}
+                    {questions.map((question, i) =>
+                        <Question key={question.id} question={question} index={i + 1} onTitleChange={handleQuestionTitleChange} onImageChange={handleQuestionImageChange} onAnswerChange={handleAnswerChange} onDelete={handleQuestionDelete} />
+                    )}
                     <button type="button" className="btn btn_secondary mt-5" onClick={handleAddQuestion}>Добавить</button>
                 </div>
             </div>

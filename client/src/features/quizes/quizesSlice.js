@@ -1,3 +1,5 @@
+import { createSlice, createSelector, createAsyncThunk } from '@reduxjs/toolkit';
+
 const initialState = {
     status: 'idle',
     entities: [],
@@ -5,104 +7,79 @@ const initialState = {
     answers: []
 };
 
-export default function quizesReducer(state = initialState, action) {
-    switch (action.type) {
-        case "quizes/quizesLoading": {
-            return {
-                ...state,
-                status: 'loading'
-            }
-        }
-        case "quizes/quizesLoaded": {
-            return {
-                ...state,
-                status: 'idle',
-                entities: action.payload
-            };
-        }
-        case "quizes/quizAdded": {
-            return {
-                ...state,
-                entities: [...state.entities, action.payload]
-            }
-        }
-        case "quizes/quizChanged": {
-            return {
-                ...state,
-                entities: state.entities.map(quiz => {
-                    if (quiz.id !== action.payload.id) {
-                        return quiz;
-                    }
-                    return {
-                        ...quiz,
-                        title: action.payload.title,
-                        description: action.payload.description,
-                        image: action.payload.image,
-                        imageSource: action.payload.imageSource,
-                        questions: action.payload.questions
-                    }
-                })
-            }
-        }
-        default:
-            return state
-    }
-}
-
-
-export const quizesLoading = () => {
-    return {
-        type: 'quizes/quizesLoading'
-    }
-}
-
-export const quizesLoaded = data => {
-    return {
-        type: 'quizes/quizesLoaded',
-        payload: data
-    }
-}
-
-export function fetchQuizes() {
-    return async function fetchQuizesThunk(dispatch, getState) {
-        dispatch(quizesLoading());
-        await fetch('/api/get')
-            .then(response => {
-                return response.json();
-            })
-            .then(data => {
-                setTimeout(() => {
-                    dispatch(quizesLoaded(data));
-                }, 1000)
-            });
-    }
-}
-
-export const quizAdded = quiz => {
-    return {
-        type: 'quizes/quizAdded',
-        payload: quiz
-    }
-}
-
-export function saveNewQuiz(quiz) {
-    return async function saveNewQuizthunk(dispatch, getState) {
-        await fetch('/api/insert', {
-            body: JSON.stringify(quiz)
+export const fetchQuizes = createAsyncThunk('quizes/fetchQuizes', async () => {
+    return await fetch('/api/get')
+        .then(response => {
+            return response.json();
         })
-            .then(response => {
-                return response.json();
-            })
-            .then(data => {
-                dispatch(quizAdded(data))
-            });
-    }
-}
+        .then(data => {
+            return data;
+        });
+});
 
-export function selectQuizes(state) {
-    return state.quizes.entities;
-}
+export const saveNewQuiz = createAsyncThunk('quizes/saveNewQuiz', async quiz => {
+    return await fetch('/api/insert', {
+        body: JSON.stringify(quiz)
+    })
+        .then(response => {
+            return response.json();
+        })
+        .then(data => {
+            return data;
+        });
+});
+
+const quizesSlice = createSlice({
+    name: 'quizes',
+    initialState,
+    reducers: {
+        quizesLoading(state) {
+            state.status = "loading";
+        },
+        quizesLoaded(state, action) {
+            const newEntities = {};
+            action.payload.forEach(quiz => {
+                newEntities[quiz.id] = quiz;
+            });
+            state.entities = newEntities;
+            state.status = "idle";
+        },
+        quizAdded(state, action) {
+            const quiz = action.payload;
+            state.entities[quiz.id] = quiz;
+        },
+        quizDeleted(state, action) {
+            delete state.entities[action.payload]
+        }
+    },
+    extraReducers: builder => {
+        builder
+            .addCase(fetchQuizes.pending, (state, action) => {
+                state.status = 'loading';
+            })
+            .addCase(fetchQuizes.fulfilled, (state, action) => {
+                const newEntities = {};
+                action.payload.forEach(quiz => {
+                    newEntities[quiz.id] = quiz;
+                });
+                state.entities = newEntities;
+                state.status = 'idle';
+            })
+            .addCase(saveNewQuiz.fulfilled, (state, action) => {
+                const quiz = action.payload;
+                state.entities[quiz.id] = quiz;
+            })
+    }
+})
+
+const selectQuizesEntities = state => state.quizes.entities;
+
+export const selectQuizes = createSelector(selectQuizesEntities, entities => Object.values(entities));
 
 export function selectQuizById(state, quizId) {
-    return selectQuizes(state).find(quiz => quiz.id === parseInt(quizId));
+    return selectQuizesEntities(state)[quizId];
 }
+
+export const { quizesLoading, quizesLoaded, quizAdded, quizDeleted } = quizesSlice.actions;
+
+export default quizesSlice.reducer;
