@@ -55,27 +55,44 @@ app.get('/get', (req, res) => {
             });
             return quiz;
         });
-        res.send(quizes);
+        setTimeout(() => {
+            res.send(quizes);
+        }, 1000);
     });
 });
 
-app.post('/insert', (req, res) => {
+app.post('/insert', async (req, res) => {
     const title = req.body.title;
     const description = req.body.description;
     const image = req.body.image;
     const imageSource = req.body.imageSource;
-    const InsertQuery = "INSERT INTO quizes_items (title, description, image, imageSource) VALUES (?, ?, ?, ?)";
-    db.query(InsertQuery, [title, description, image, imageSource], (err, result) => {
-        res.send(result);
-    });
-});
+    const questions = req.body.questions;
 
-app.delete('/delete/:quizId', (req, res) => {
-    const quizId = req.params.quizId;
-    const DeleteQuery = "DELETE FROM quizes_items WHERE id = ?";
-    db.query(DeleteQuery, quizId, (err, result) => {
-        if (err) console.log(err);
+    let lastQuizInsertId;
+
+    await db.query("INSERT INTO quizes_items (title, description, image, imageSource) VALUES (?, ?, ?, ?)", [title, description, image, imageSource], (err, result) => {
+        res.send(result);
+        lastQuizInsertId = result.insertId;
     });
+
+    for (const question of questions) {
+        const {position, title, image, imageSource, answers} = question;
+        await db.query("INSERT INTO quizes_questions (quiz_id, postition, title, image, imageSurce) VALUES (?, ?, ?, ?, ?)", [lastQuizInsertId, position, title, image, imageSource], (err, result) => {
+            res.send(result);
+            lastQuestionInsertId = result.insertId;
+        })
+            then(() => {
+                let answersArr = [];
+                answers.forEach(answer => {
+                    const { title } = answer;
+                    answersArr.push([lastQuestionInsertId, title]);
+                });
+    
+                await db.query("INSERT INTO quizes_answers (question_id, postition, title) VALUES (?, ?, ?)", [lastQuestionInsertId, position, title], (err, result) => {
+                    res.send(result);
+                });
+            });
+    }
 });
 
 app.put('/update/:quizId', (req, res) => {
@@ -84,8 +101,18 @@ app.put('/update/:quizId', (req, res) => {
     const description = req.body.description;
     const image = req.body.image;
     const imageSource = req.body.imageSource;
+
     const UpdateQuery = "UPDATE quizes_items SET title = ? description = ? image = ? imageSource = ? WHERE id = ?";
     db.query(UpdateQuery, [title, description, image, imageSource, quizId], (err, result) => {
+        if (err) console.log(err);
+    });
+});
+
+app.delete('/delete/:quizId', (req, res) => {
+    const quizId = req.params.quizId;
+
+    const DeleteQuery = "DELETE FROM quizes_items WHERE id = ?";
+    db.query(DeleteQuery, quizId, (err, result) => {
         if (err) console.log(err);
     });
 });

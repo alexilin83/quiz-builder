@@ -1,23 +1,22 @@
 import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useParams } from "react-router-dom";
-import { v4 as uuidv4 } from 'uuid';
-import Loader from '../loader/Loader';
+import Spinner from '../../app/components/Spinner';
 import Question from '../questions/Question';
-import { selectQuizById } from './quizesSlice';
+import { selectQuizById, quizUpdated } from './quizesSlice';
 
-const Quiz = () => {
+const EditQuizForm = () => {
     let { id } = useParams();
     const loadingStatus = useSelector(state => state.quizes.status);
     const quiz = useSelector(state => selectQuizById(state, id));
-
-    const dispatch = useDispatch();
 
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [image, setImage] = useState('');
     const [imageSource, setImageSource] = useState('');
     const [questions, setQuestions] = useState([]);
+
+    const dispatch = useDispatch();
 
     useEffect(() => {
         if (quiz) {
@@ -26,34 +25,27 @@ const Quiz = () => {
             setImage(quiz.image);
             setImageSource(quiz.imageSource);
             setQuestions(quiz.questions);
-        } else {
-            setTitle('');
-            setDescription('');
-            setImage('');
-            setImageSource('');
-            setQuestions([]);
         }
     }, [quiz]);
 
-    function handleTitleChange(e) {
+    function onQuizTitleChanged(e) {
         setTitle(e.target.value);
     }
 
-    function handleDescriptionChange(e) {
+    function onQuizDescriptionChanged(e) {
         setDescription(e.target.value);
     }
 
-    function handleImageChange(e) {
+    function onQuizImageChanged(e) {
         setImage(e.target.value);
     }
 
-    function handleImageSourceChange(e) {
+    function onQuizImageSourceChanged(e) {
         setImageSource(e.target.value);
     }
 
-    function handleAddQuestion() {
+    function onQuestionAdded() {
         setQuestions([...questions, {
-            id: uuidv4(),
             pos: questions.length,
             title: 'Новый вопрос',
             image: '',
@@ -61,7 +53,7 @@ const Quiz = () => {
         }]);
     }
 
-    function handleQuestionTitleChange(id, e) {
+    function onQuestionTitleChanged(id, e) {
         let newQuestions = questions.map(question => {
             if (question.id === id) {
                 question.title = e.target.value;
@@ -71,15 +63,11 @@ const Quiz = () => {
         setQuestions(newQuestions);
     }
 
-    function handleQuestionImageChange(id, e) {
+    function onQuestionImageChanged(id, e) {
         
     }
 
-    function handleAnswerChange(id, questionId, e) {
-        
-    }
-
-    function handleQuestionDelete(id, e) {
+    function onQuestionDeleted(id, e) {
         e.stopPropagation();
         let newQuestions = questions.filter(question => {
             if (question.id !== id) {
@@ -90,8 +78,18 @@ const Quiz = () => {
         setQuestions(newQuestions);
     }
 
+    function onAnswerChanged(id, questionId, e) {
+        
+    }
+
+    function onSaveQuizClicked() {
+        dispatch(quizUpdated({id, title, description, image, imageSource, questions}));
+    }
+
     if (loadingStatus === 'loading' && id) {
-        return <Loader />
+        return <Spinner />
+    } else if (!quiz && id) {
+        return <h2 className="text-center">Quiz not found!</h2>
     }
 
     return (
@@ -101,33 +99,33 @@ const Quiz = () => {
                 <div className="grid grid-cols-6 gap-6 mb-12">
                     <div className="col-span-3">
                         <label className="label">Заголовок</label>
-                        <input type="text" className="input-text mb-5" value={title} onChange={handleTitleChange} />
+                        <input type="text" className="input-text mb-5" value={title} onChange={onQuizTitleChanged} />
                         <label className="label">Описание</label>
-                        <textarea className="input-textarea h-40" value={description} onChange={handleDescriptionChange} />
+                        <textarea className="input-textarea h-40" value={description} onChange={onQuizDescriptionChanged} />
                     </div>
                     <div className="col-span-3">
                         <label className="label">Главное изображение</label>
-                        <input type="text" className="input-text mb-2" value={image} onChange={handleImageChange} />
+                        <input type="text" className="input-text mb-2" value={image} onChange={onQuizImageChanged} />
                         <div className="thumb mb-5">
                             <img className="thumb__img" src={image} alt="" />
                         </div>
                         <label className="label">Источник изображения</label>
-                        <input type="text" className="input-text" value={imageSource} onChange={handleImageSourceChange} />
+                        <input type="text" className="input-text" value={imageSource} onChange={onQuizImageSourceChanged} />
                     </div>
                 </div>
                 <h2>Вопросы</h2>
                 <div>
                     {questions.map((question, i) =>
-                        <Question key={question.id} question={question} index={i + 1} onTitleChange={handleQuestionTitleChange} onImageChange={handleQuestionImageChange} onAnswerChange={handleAnswerChange} onDelete={handleQuestionDelete} />
+                        <Question key={question.id} question={question} index={i + 1} onTitleChanged={onQuestionTitleChanged} onImageChanged={onQuestionImageChanged} onAnswerChanged={onAnswerChanged} onDeleted={onQuestionDeleted} />
                     )}
-                    <button type="button" className="btn btn_secondary mt-5" onClick={handleAddQuestion}>Добавить</button>
+                    <button type="button" className="btn btn_secondary mt-5" onClick={onQuestionAdded}>Добавить</button>
                 </div>
             </div>
             <div className="px-10 py-5 bg-gray-50">
-                <button type="submit" className="btn">Сохранить</button>
+                <button type="button" className="btn" onClick={onSaveQuizClicked}>Сохранить</button>
             </div>
         </form>
     )
 }
 
-export default Quiz;
+export default EditQuizForm;

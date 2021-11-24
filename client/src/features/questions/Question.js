@@ -6,20 +6,20 @@ const Question = props => {
 
     let { id, title, image, answers } = props.question;
 
-    function handleHeaderClick() {
+    function onHeaderClicked() {
         setIsActive(!isActive);
     }
 
     return (
         <div className="mb-3 bg-gray-50 rounded-lg overflow-hidden shadow">
-            <header className={`flex items-center px-5 py-5 bg-gray-100 cursor-pointer transition hover:bg-gray-200 ${isActive ? 'bg-gray-200': ''}`} onClick={handleHeaderClick}>
+            <header className={`flex items-center px-5 py-5 bg-gray-100 cursor-pointer transition hover:bg-gray-200 ${isActive ? 'bg-gray-200': ''}`} onClick={onHeaderClicked}>
                 <div className="flex-grow">
                     <h3 className="m-0">
                         <span className="inline-block pr-2 text-gray-400">{props.index}</span>
                         {title}
                     </h3>
                 </div>
-                <button type="button" className="flex flex-grow-0 justify-center items-center transition hover:text-pink-500" onClick={e => props.onDelete(id, e)}>
+                <button type="button" className="flex flex-grow-0 justify-center items-center transition hover:text-pink-500" onClick={e => props.onDeleted(id, e)}>
                     <TrashIcon className="h-6 w-6"/>
                 </button>
             </header>
@@ -28,9 +28,9 @@ const Question = props => {
                     <div className="grid grid-cols-6 gap-6">
                         <div className="col-span-3">
                             <label className="label">Текст</label>
-                            <textarea type="text" className="input-textarea h-28 mb-5" value={title} onChange={e => props.onTitleChange(id, e)} />
+                            <textarea type="text" className="input-textarea h-28 mb-5" value={title} onChange={e => props.onTitleChanged(id, e)} />
                             <label className="label">Изображение</label>
-                            <input type="text" className="input-text mb-2" value={image} onChange={e => props.onImageChange(id)} />
+                            <input type="text" className="input-text mb-2" value={image} onChange={e => props.onImageChanged(id)} />
                             <div className="thumb">
                                 <img className="thumb__img" src={image} alt="" />
                             </div>
@@ -39,10 +39,10 @@ const Question = props => {
                             <label className="label">Ответы</label>
                             {answers.map(answer => 
                                 <div key={answer.id} className="mb-2">
-                                    <input type="text" className="input-text" value={answer.title} onChange={e => props.onAnswerChange(answer.id, id, e)} />
+                                    <input type="text" className="input-text" value={answer.title} onChange={e => props.onAnswerChanged(answer.id, id, e)} />
                                 </div>
                             )}
-                            <button type="button" className="btn btn_secondary mt-5" onClick={props.onAnswerAdd}>Добавить</button>
+                            <button type="button" className="btn btn_secondary mt-5" onClick={props.onAnswerAdded}>Добавить</button>
                         </div>
                     </div>
                 </div>

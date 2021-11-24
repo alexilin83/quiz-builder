@@ -1,6 +1,6 @@
 import React from "react";
 
-const Loader = () => {
+const Spinner = () => {
     return (
         <div className="w-10 h-10 mx-auto">
             <svg fill="none" className="w-full h-full stroke-current stroke-2 animate-spin" viewBox="0 0 38 38" xmlns="http://www.w3.org/2000/svg">
@@ -13,4 +13,4 @@ const Loader = () => {
     );
 };
 
-export default Loader;
+export default Spinner;

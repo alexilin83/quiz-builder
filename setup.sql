@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS quizes_items (
 CREATE TABLE IF NOT EXISTS quizes_questions (
     id INT(11) NOT NULL AUTO_INCREMENT,
     quiz_id INT(11) NOT NULL,
-    pos INT(11) NOT NULL,
+    position INT(11) NOT NULL,
     title VARCHAR(100) NOT NULL DEFAULT '',
     image VARCHAR(100) NOT NULL DEFAULT '',
     imageSource VARCHAR(50) NOT NULL DEFAULT '',
@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS quizes_questions (
 CREATE TABLE IF NOT EXISTS quizes_answers (
     id INT(11) NOT NULL AUTO_INCREMENT,
     question_id INT(11) NOT NULL,
-    pos INT(11) NOT NULL,
+    position INT(11) NOT NULL,
     title VARCHAR(100) NOT NULL DEFAULT '',
     PRIMARY KEY (id),
     FOREIGN KEY (question_id) REFERENCES quizes_questions(id) ON DELETE CASCADE
@@ -60,7 +60,7 @@ VALUES
 INSERT INTO
     quizes_questions (
         quiz_id,
-        pos,
+        position,
         title,
         image,
         imageSource
@@ -77,7 +77,7 @@ VALUES
 INSERT INTO
     quizes_questions (
         quiz_id,
-        pos,
+        position,
         title,
         image,
         imageSource
@@ -94,7 +94,7 @@ VALUES
 INSERT INTO
     quizes_questions (
         quiz_id,
-        pos,
+        position,
         title,
         image,
         imageSource
@@ -112,7 +112,7 @@ VALUES
 INSERT INTO
     quizes_answers (
         question_id,
-        pos,
+        position,
         title
     )
 VALUES
