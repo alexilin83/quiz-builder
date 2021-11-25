@@ -3,7 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { Link } from "react-router-dom";
 import Spinner from '../../app/components/Spinner';
 import { selectQuizes, fetchQuizes } from './quizesSlice';
-import { PlusIcon } from '@heroicons/react/outline';
+import { format, parseISO } from 'date-fns'
 
 const QuizList = () => {
     const quizes = useSelector(selectQuizes);
@@ -23,20 +23,26 @@ const QuizList = () => {
     if (loadingStatus === 'loading') {
         content = <Spinner />
     } else if (loadingStatus === 'succeeded') {
-        content = <div className="flex gap-4">
-            {quizes.map(quiz => {
+        const renderedQuizes = quizes.slice().sort((a, b) => b.date.localeCompare(a.date));
+        content = renderedQuizes.map(quiz => {
                 return (
-                    <div className="w-1/5" key={quiz.id}>
-                        <Link to={`/quiz/${quiz.id}`} className="block p-4 bg-green-400 hover:bg-green-500 rounded-lg text-white font-bold">{quiz.title}</Link>
+                    <div className="mb-3" key={quiz.id}>
+                        <Link to={`/quiz/${quiz.id}`} className="flex p-4 bg-white rounded-lg shadow">
+                            <div className="overflow-hidden w-1/6 h-28 mr-3 bg-gray-300 rounded-lg">
+                                {quiz.image && <img src={quiz.image} alt={quiz.imageSource} className="w-full h-full object-cover object-center" />}
+                            </div>
+                            <div className="">
+                                <h3>{quiz.title}</h3>
+                                <small>
+                                    Дата создания: {format(parseISO(quiz.date), 'dd.MM.yyyy HH:mm')}
+                                    <br />
+                                    Кол-во вопросов: {quiz.questions.length}
+                                </small>
+                            </div>
+                        </Link>
                     </div>
                 )
-            })}
-            <div className="w-1/5">
-                <Link to="/quiz/new" className="block p-4 bg-green-400 hover:bg-green-500 rounded-lg text-white font-bold">
-                    <PlusIcon className="h-6 w-6 mx-auto"/>
-                </Link>
-            </div>
-        </div>;
+            });
     } else if (loadingStatus === 'failed') {
         content = <h2>{error}</h2>
     }

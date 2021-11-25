@@ -1,4 +1,4 @@
-import { createSlice, createAsyncThunk, createEntityAdapter, nanoid } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk, createEntityAdapter } from '@reduxjs/toolkit';
 
 const quizesAdapter = createEntityAdapter();
 
@@ -19,6 +19,10 @@ export const fetchQuizes = createAsyncThunk('quizes/fetchQuizes', async () => {
 
 export const addNewQuiz = createAsyncThunk('quizes/addNewQuiz', async initialQuiz => {
     return await fetch('/api/insert', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
         body: JSON.stringify(initialQuiz)
     })
         .then(response => {

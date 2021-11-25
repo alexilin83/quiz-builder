@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import Question from '../questions/Question';
 import { addNewQuiz } from './quizesSlice';
+import Spinner from '../../app/components/Spinner';
 
 const AddQuizForm = () => {
     const [title, setTitle] = useState('');
@@ -112,7 +113,10 @@ const AddQuizForm = () => {
                 </div>
             </div>
             <div className="px-10 py-5 bg-gray-50">
-                <button type="button" disabled={!canSave} className="btn" onClick={onSaveQuizClicked}>Сохранить</button>
+                <button type="button" disabled={!canSave} className="btn" onClick={onSaveQuizClicked}>
+                    {(addRequestStatus === 'pending') && <Spinner />}
+                    Сохранить
+                </button>
             </div>
         </form>
     )

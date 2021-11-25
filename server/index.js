@@ -62,37 +62,44 @@ app.get('/get', (req, res) => {
 });
 
 app.post('/insert', async (req, res) => {
-    const title = req.body.title;
-    const description = req.body.description;
-    const image = req.body.image;
-    const imageSource = req.body.imageSource;
-    const questions = req.body.questions;
+    const {title, description, image, imageSource, questions} = req.body;
 
     let lastQuizInsertId;
 
-    await db.query("INSERT INTO quizes_items (title, description, image, imageSource) VALUES (?, ?, ?, ?)", [title, description, image, imageSource], (err, result) => {
-        res.send(result);
-        lastQuizInsertId = result.insertId;
-    });
-
+    await db.promise().query("INSERT INTO quizes_items (title, description, image, imageSource) VALUES (?, ?, ?, ?)", [title, description, image, imageSource])
+        .then(([result, rows]) => {
+            lastQuizInsertId = result.insertId;
+        })
+        .catch(console.log);
+    
     for (const question of questions) {
         const {position, title, image, imageSource, answers} = question;
-        await db.query("INSERT INTO quizes_questions (quiz_id, postition, title, image, imageSurce) VALUES (?, ?, ?, ?, ?)", [lastQuizInsertId, position, title, image, imageSource], (err, result) => {
-            res.send(result);
-            lastQuestionInsertId = result.insertId;
-        })
-            then(() => {
-                let answersArr = [];
-                answers.forEach(answer => {
-                    const { title } = answer;
-                    answersArr.push([lastQuestionInsertId, title]);
-                });
-    
-                await db.query("INSERT INTO quizes_answers (question_id, postition, title) VALUES (?, ?, ?)", [lastQuestionInsertId, position, title], (err, result) => {
-                    res.send(result);
-                });
-            });
+        let lastQuestionInsertId;
+        await db.promise().query("INSERT INTO quizes_questions (quiz_id, postition, title, image, imageSurce) VALUES (?, ?, ?, ?, ?)", [lastQuizInsertId, position, title, image, imageSource])
+            .then(result => {
+                lastQuestionInsertId = result.insertId;
+            })
+            .catch(console.log);
+
+        let answersArr = [];
+        answers.forEach(answer => {
+            const { position, title } = answer;
+            answersArr.push([lastQuestionInsertId, position, title]);
+        });
+
+        await db.promise().query("INSERT INTO quizes_answers (question_id, postition, title) VALUES (?, ?, ?)", answersArr)
+            .catch(console.log);
     }
+
+    res.send({
+        id: lastQuizInsertId,
+        title,
+        description,
+        image,
+        imageSource,
+        questions,
+        date: new Date().toISOString()
+    });
 });
 
 app.put('/update/:quizId', (req, res) => {

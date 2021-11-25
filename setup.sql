@@ -4,6 +4,7 @@ CREATE TABLE IF NOT EXISTS quizes_items (
     description VARCHAR(255) NOT NULL DEFAULT '',
     image VARCHAR(100) NOT NULL DEFAULT '',
     imageSource VARCHAR(50) NOT NULL DEFAULT '',
+    date DATETIME DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8 COLLATE = utf8_general_ci;
 
