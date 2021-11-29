@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { useParams } from "react-router-dom";
 import Spinner from '../../app/components/Spinner';
 import Question from '../questions/Question';
-import { selectQuizById, quizUpdated } from './quizesSlice';
+import { useGetQuizQuery } from '../api/apiSlice';
 
 const EditQuizForm = () => {
     let { id } = useParams();
-    const loadingStatus = useSelector(state => state.quizes.status);
-    const quiz = useSelector(state => selectQuizById(state, id));
+
+    const { data: quiz, isFetching, isSuccess} = useGetQuizQuery(id);
 
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
@@ -20,6 +20,8 @@ const EditQuizForm = () => {
 
     useEffect(() => {
         if (quiz) {
+            console.log(quiz);
+            console.log(111);
             setTitle(quiz.title);
             setDescription(quiz.description);
             setImage(quiz.image);
@@ -83,17 +85,15 @@ const EditQuizForm = () => {
     }
 
     function onSaveQuizClicked() {
-        dispatch(quizUpdated({id, title, description, image, imageSource, questions}));
+        // dispatch(quizUpdated({id, title, description, image, imageSource, questions}));
     }
 
-    if (loadingStatus === 'loading' && id) {
-        return <Spinner />
-    } else if (!quiz && id) {
-        return <h2 className="text-center">Quiz not found!</h2>
-    }
+    let content;
 
-    return (
-        <form className="shadow rounded-md overflow-hidden">
+    if (isFetching) {
+        content = <Spinner />
+    } else if (isSuccess) {
+        content = <form className="shadow rounded-md overflow-hidden">
             <div className="px-10 py-8 bg-white">
                 <h2>Параметры</h2>
                 <div className="grid grid-cols-6 gap-6 mb-12">
@@ -125,7 +125,9 @@ const EditQuizForm = () => {
                 <button type="button" className="btn" onClick={onSaveQuizClicked}>Сохранить</button>
             </div>
         </form>
-    )
+    }
+
+    return <div>{content}</div>;
 }
 
 export default EditQuizForm;

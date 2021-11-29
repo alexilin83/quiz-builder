@@ -1,6 +1,7 @@
 const express = require('express');
 const mysql = require('mysql2');
 const cors = require('cors');
+const { format } = require('mysql2');
 const app = express();
 
 const db = mysql.createPool({
@@ -18,7 +19,7 @@ app.get('/', (req, res) => {
     res.send('Hi there');
 });
 
-app.get('/get', (req, res) => {
+app.get('/quizes', (req, res) => {
     let quizes = [];
     let questions = [];
     let answers = [];
@@ -61,7 +62,34 @@ app.get('/get', (req, res) => {
     });
 });
 
-app.post('/insert', async (req, res) => {
+app.get('/quizes/:quizId', async (req, res) => {
+    const quizId = req.params.quizId;
+    let quiz = {};
+    let questions = [];
+    let answers = [];
+
+    const [quizRows, quizFields] = await db.promise().query(`SELECT * FROM quizes_items WHERE id = ${quizId}`)
+    quiz = quizRows[0];
+    const [questionsRows, questionFields] = await db.promise().query(`SELECT * FROM quizes_questions WHERE quiz_id = ${quizId}`);
+    questions = questionsRows;
+    for (const question of questions) {
+        const [rows, fields] = await db.promise().query(`SELECT * FROM quizes_answers WHERE question_id = ${question.id}`)
+        answers = answers.concat(rows);
+    }
+    questions = questions.map(question => {
+        question.answers = [];
+        answers.forEach(answer => {
+            if (answer.question_id === question.id) {
+                question.answers.push(answer);
+            }
+        });
+        return question;
+    });
+    quiz.questions = questions;
+    res.send(quiz);
+});
+
+app.post('/quizes/add', async (req, res) => {
     const {title, description, image, imageSource, questions} = req.body;
 
     let lastQuizInsertId;

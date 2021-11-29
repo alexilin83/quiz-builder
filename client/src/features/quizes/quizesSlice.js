@@ -1,6 +1,8 @@
 import { createSlice, createAsyncThunk, createEntityAdapter } from '@reduxjs/toolkit';
 
-const quizesAdapter = createEntityAdapter();
+const quizesAdapter = createEntityAdapter({
+    sortComparer: (a, b) => b.date.localeCompare(a.date)
+});
 
 const initialState = quizesAdapter.getInitialState({
     status: 'idle',
@@ -8,7 +10,7 @@ const initialState = quizesAdapter.getInitialState({
 });
 
 export const fetchQuizes = createAsyncThunk('quizes/fetchQuizes', async () => {
-    return await fetch('/api/get')
+    return await fetch('/api/quizes')
         .then(response => {
             return response.json();
         })
@@ -57,7 +59,7 @@ const quizesSlice = createSlice({
             })
             .addCase(fetchQuizes.fulfilled, (state, action) => {
                 state.status = 'succeeded';
-                quizesAdapter.setAll(state, action.payload);
+                quizesAdapter.upsertMany(state, action.payload);
             })
             .addCase(fetchQuizes.rejected, (state, action) => {
                 state.status = 'failed';
@@ -71,4 +73,4 @@ export const { quizAdded, quizUpdated, quizDeleted } = quizesSlice.actions;
 
 export default quizesSlice.reducer;
 
-export const { selectAll: selectQuizes, selectById: selectQuizById } = quizesAdapter.getSelectors(state => state.quizes);
+export const { selectAll: selectQuizes, selectIds: selectQuizIds, selectById: selectQuizById } = quizesAdapter.getSelectors(state => state.quizes);

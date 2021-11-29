@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import Question from '../questions/Question';
-import { addNewQuiz } from './quizesSlice';
+import { useAddNewQuizMutation } from '../api/apiSlice';
 import Spinner from '../../app/components/Spinner';
 
 const AddQuizForm = () => {
@@ -10,9 +10,8 @@ const AddQuizForm = () => {
     const [image, setImage] = useState('');
     const [imageSource, setImageSource] = useState('');
     const [questions, setQuestions] = useState([]);
-    const [addRequestStatus, setAddRequestStatus] = useState('idle');
 
-    const dispatch = useDispatch();
+    const [addNewQuiz, { isLoading }] = useAddNewQuizMutation();
 
     function onQuizTitleChanged(e) {
         setTitle(e.target.value);
@@ -68,17 +67,14 @@ const AddQuizForm = () => {
         
     }
 
-    const canSave = [title, description].every(Boolean) && addRequestStatus === 'idle';
+    const canSave = [title, description].every(Boolean) && !isLoading;
 
     async function onSaveQuizClicked() {
         if (canSave) {
             try {
-                setAddRequestStatus('pending');
-                await dispatch(addNewQuiz({title, description, image, imageSource, questions})).unwrap();
+                await addNewQuiz({title, description, image, imageSource, questions}).unwrap();
             } catch (error) {
                 console.error('Ошибка при сохранении теста: ', error)
-            } finally {
-                setAddRequestStatus('idle');
             }
         }
     }
@@ -114,7 +110,7 @@ const AddQuizForm = () => {
             </div>
             <div className="px-10 py-5 bg-gray-50">
                 <button type="button" disabled={!canSave} className="btn" onClick={onSaveQuizClicked}>
-                    {(addRequestStatus === 'pending') && <Spinner />}
+                    {isLoading && <Spinner />}
                     Сохранить
                 </button>
             </div>
