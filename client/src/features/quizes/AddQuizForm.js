@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { useDispatch } from 'react-redux';
 import Question from '../questions/Question';
 import { useAddNewQuizMutation } from '../api/apiSlice';
 import Spinner from '../../app/components/Spinner';

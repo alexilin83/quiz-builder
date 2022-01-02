@@ -1,32 +1,49 @@
 import React, { useEffect, useState } from 'react';
-import { useDispatch } from 'react-redux';
 import { useParams } from "react-router-dom";
 import Spinner from '../../app/components/Spinner';
 import Question from '../questions/Question';
-import { useGetQuizQuery } from '../api/apiSlice';
+import { useGetQuizQuery, useEditQuizMutation } from '../api/apiSlice';
+import { nanoid } from '@reduxjs/toolkit';
 
 const EditQuizForm = () => {
     let { id } = useParams();
 
     const { data: quiz, isFetching, isSuccess} = useGetQuizQuery(id);
+    const [updateQuiz, { isLoading }] = useEditQuizMutation();
 
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [image, setImage] = useState('');
     const [imageSource, setImageSource] = useState('');
     const [questions, setQuestions] = useState([]);
-
-    const dispatch = useDispatch();
+    const [answers, setAnswers] = useState([]);
 
     useEffect(() => {
         if (quiz) {
-            console.log(quiz);
-            console.log(111);
             setTitle(quiz.title);
             setDescription(quiz.description);
             setImage(quiz.image);
             setImageSource(quiz.imageSource);
-            setQuestions(quiz.questions);
+
+            let questionsData = [];
+            let answersData = [];
+
+            quiz.questions.forEach(question => {
+                questionsData.push({
+                    id: question.id,
+                    title: question.title,
+                    image: question.image
+                });
+
+                question.answers.forEach(answer => {
+                    answersData.push({
+                        id: answer.id,
+                        title: answer.title
+                    })
+                });
+            })
+            setQuestions(questionsData);
+            setAnswers(answersData);
         }
     }, [quiz]);
 
@@ -48,25 +65,22 @@ const EditQuizForm = () => {
 
     function onQuestionAdded() {
         setQuestions([...questions, {
-            pos: questions.length,
+            id: nanoid(),
+            position: questions.length,
             title: 'Новый вопрос',
             image: '',
             answers: []
         }]);
     }
 
-    function onQuestionTitleChanged(id, e) {
+    function onQuestionDataChanged(id, e) {
         let newQuestions = questions.map(question => {
             if (question.id === id) {
-                question.title = e.target.value;
+                question[e.currentTarget.getAttribute('name')] = e.target.value;
             }
             return question;
         });
         setQuestions(newQuestions);
-    }
-
-    function onQuestionImageChanged(id, e) {
-        
     }
 
     function onQuestionDeleted(id, e) {
@@ -80,12 +94,34 @@ const EditQuizForm = () => {
         setQuestions(newQuestions);
     }
 
-    function onAnswerChanged(id, questionId, e) {
-        
+    function onAnswerAdded(questionId) {
+        setAnswers([...answers, {
+            id: nanoid(),
+            question_id: questionId,
+            position: answers.reduce(function(previousValue, currentValue, i, array) {
+                if (array[i].question_id === questionId) {
+                    return previousValue + 1;
+                }
+                return previousValue;
+            }, 1),
+            title: ''
+        }]);
     }
 
-    function onSaveQuizClicked() {
-        // dispatch(quizUpdated({id, title, description, image, imageSource, questions}));
+    function onAnswerChanged(id, e) {
+        const newAnswers = answers.map(answer => {
+            if (answer.id === id) {
+                answer.title = e.target.value;
+            }
+            return answer;
+        });
+        setAnswers(newAnswers);
+    }
+
+    const onSaveQuizClicked = async () => {
+        if (title && description) {
+            await updateQuiz({id, title, description, image, imageSource, questions});
+        }
     }
 
     let content;
@@ -115,9 +151,10 @@ const EditQuizForm = () => {
                 </div>
                 <h2>Вопросы</h2>
                 <div>
-                    {questions.map((question, i) =>
-                        <Question key={question.id} question={question} index={i + 1} onTitleChanged={onQuestionTitleChanged} onImageChanged={onQuestionImageChanged} onAnswerChanged={onAnswerChanged} onDeleted={onQuestionDeleted} />
-                    )}
+                    {questions.map((question, i) => {
+                        const currentAnswers = answers.filter(answer => answer.question_id === question.id);
+                        return <Question key={question.id} question={question} answers={currentAnswers} index={i + 1} onDataChanged={onQuestionDataChanged} onAnswerAdded={onAnswerAdded} onAnswerChanged={onAnswerChanged} onDeleted={onQuestionDeleted} />
+                    })}
                     <button type="button" className="btn btn_secondary mt-5" onClick={onQuestionAdded}>Добавить</button>
                 </div>
             </div>

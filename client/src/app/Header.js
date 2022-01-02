@@ -12,7 +12,7 @@ const Header = () => (
                 </div>
                 <nav className="flex justify-center w-2/6">
                     <NavLink end to="/" className={({ isActive }) => "nav-link" + (isActive ? " nav-link_active" : "")}>Тесты</NavLink>
-                    <NavLink to="/quiz/new" className={({ isActive }) => "nav-link" + (isActive ? " nav-link_active" : "")}>Создать тест</NavLink>
+                    <NavLink to="/quizes/new" className={({ isActive }) => "nav-link" + (isActive ? " nav-link_active" : "")}>Создать тест</NavLink>
                 </nav>
                 <div className="flex justify-end w-2/6">
                     <Link to="/login" className="btn">Войти</Link>

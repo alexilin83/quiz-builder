@@ -6,20 +6,32 @@ export const apiSlice = createApi({
     endpoints: builder => ({
         getQuizes: builder.query({
             query: () => '/quizes',
-            providesTags: ['Quiz']
+            providesTags: (result = [], error, arg) => [
+                'Quiz',
+                ...result.map(({ id }) => ({type: 'Quiz', id}))
+            ]
         }),
         getQuiz: builder.query({
-            query: quizId => `/quizes/${quizId}`
+            query: quizId => `/quizes/${quizId}`,
+            providesTags: (result, error, arg) => [{type: 'Quiz', id: arg}]
         }),
         addNewQuiz: builder.mutation({
             query: initialQuiz => ({
-                url: '/quizes/add',
+                url: '/quizes',
                 method: 'POST',
                 body: initialQuiz
             }),
             invalidatesTags: ['Quiz']
+        }),
+        editQuiz: builder.mutation({
+            query: quiz => ({
+                url: `/quizes/${quiz.id}`,
+                method: 'PUT',
+                body: quiz
+            }),
+            invalidatesTags: (result, error, arg) => [{type: 'Quiz', id: arg.id}]
         })
     })
 });
 
-export const { useGetQuizesQuery, useGetQuizQuery, useAddNewQuizMutation } = apiSlice;
+export const { useGetQuizesQuery, useGetQuizQuery, useAddNewQuizMutation, useEditQuizMutation } = apiSlice;

@@ -30,7 +30,6 @@ services:
       context: ./nginx
     ports:
       - '3050:80'
-
   api:
     build:
       dockerfile: Dockerfile
@@ -43,7 +42,6 @@ services:
     environment:
       <<: *common-variables
       MYSQL_HOST_IP: mysql_db
-  
   client:
     stdin_open: true
     environment:
@@ -53,7 +51,6 @@ services:
       context: ./client
     volumes:
       - ./client/src:/app/src
-
   adminer:
     image: adminer:latest
     restart: unless-stopped

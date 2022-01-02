@@ -20,44 +20,10 @@ app.get('/', (req, res) => {
 });
 
 app.get('/quizes', (req, res) => {
-    let quizes = [];
-    let questions = [];
-    let answers = [];
-    Promise.all([
-        db.promise().query("SELECT * FROM quizes_items")
-        .then(([rows]) => {
-            quizes = rows;
-        }),
-        db.promise().query("SELECT * FROM quizes_questions")
-        .then(([rows]) => {
-            questions = rows;
-        }),
-        db.promise().query("SELECT * FROM quizes_answers")
-        .then(([rows]) => {
-            answers = rows;
-        })
-    ])
-    .then(() => {
-        questions = questions.map(question => {
-            question.answers = [];
-            answers.forEach(answer => {
-                if (answer.question_id === question.id) {
-                    question.answers.push(answer);
-                }
-            });
-            return question;
-        });
-        quizes = quizes.map(quiz => {
-            quiz.questions = [];
-            questions.forEach(question => {
-                if (question.quiz_id === quiz.id) {
-                    quiz.questions.push(question);
-                }
-            });
-            return quiz;
-        });
+    db.promise().query("SELECT * FROM quizes_items")
+    .then(([rows]) => {
         setTimeout(() => {
-            res.send(quizes);
+            res.send(rows);
         }, 1000);
     });
 });
@@ -89,7 +55,7 @@ app.get('/quizes/:quizId', async (req, res) => {
     res.send(quiz);
 });
 
-app.post('/quizes/add', async (req, res) => {
+app.post('/quizes', async (req, res) => {
     const {title, description, image, imageSource, questions} = req.body;
 
     let lastQuizInsertId;
@@ -130,16 +96,34 @@ app.post('/quizes/add', async (req, res) => {
     });
 });
 
-app.put('/update/:quizId', (req, res) => {
+app.put('/quizes/:quizId', async (req, res) => {
     const quizId = req.params.quizId;
-    const title = req.body.title;
-    const description = req.body.description;
-    const image = req.body.image;
-    const imageSource = req.body.imageSource;
+    const {title, description, image, imageSource, questions} = req.body;
 
-    const UpdateQuery = "UPDATE quizes_items SET title = ? description = ? image = ? imageSource = ? WHERE id = ?";
-    db.query(UpdateQuery, [title, description, image, imageSource, quizId], (err, result) => {
-        if (err) console.log(err);
+    await db.promise().query("UPDATE quizes_items SET title = ?, description = ?, image = ?, imageSource = ? WHERE id = ?", [title, description, image, imageSource, quizId])
+        .then(result => {
+            
+        })
+        .catch(console.log);
+
+    for (const question of questions) {
+        const {position, title, image, imageSource, answers} = question;
+        
+        await db.promise().query("UPDATE quizes_questions SET position = ?, title = ?, image = ?, imageSource = ? WHERE id = ?", [position, title, image, imageSource, question.id])
+            .then(result => {
+                
+            })
+            .catch(console.log);
+
+        for (const answer of answers) {
+            const { id, position, title } = answer;
+            await db.promise().query("UPDATE quizes_answers SET position = ?, title = ? WHERE id = ?", [position, title, id])
+                .catch(console.log);
+        }
+    }
+
+    res.send({
+        status: 'success'
     });
 });
 

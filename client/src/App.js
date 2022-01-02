@@ -11,8 +11,8 @@ const App = () => (
         <div className="container mx-auto py-7">
             <Routes>
                 <Route path="/" element={<QuizList />} />
-                <Route path="/quiz/new" element={<AddQuizForm />} />
-                <Route path="/quiz/:id" element={<EditQuizForm />} />
+                <Route path="/quizes/new" element={<AddQuizForm />} />
+                <Route path="/quizes/:id" element={<EditQuizForm />} />
             </Routes>
         </div>
     </React.Fragment>
