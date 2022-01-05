@@ -38,10 +38,12 @@ const EditQuizForm = () => {
                 question.answers.forEach(answer => {
                     answersData.push({
                         id: answer.id,
+                        question_id: answer.question_id,
                         title: answer.title
                     })
                 });
             })
+
             setQuestions(questionsData);
             setAnswers(answersData);
         }
@@ -118,6 +120,20 @@ const EditQuizForm = () => {
         setAnswers(newAnswers);
     }
 
+    function onCorrectAnswerChanged(questionId, answerId) {
+        const newAnswers = answers.map(answer => {
+            if (answer.question_id === questionId) {
+                if (answer.id === answerId) {
+                    answer.isCorrect = true;
+                } else {
+                    answer.isCorrect = false;
+                }
+            }
+            return answer;
+        });
+        setAnswers(newAnswers);
+    }
+
     const onSaveQuizClicked = async () => {
         if (title && description) {
             await updateQuiz({id, title, description, image, imageSource, questions});
@@ -153,7 +169,7 @@ const EditQuizForm = () => {
                 <div>
                     {questions.map((question, i) => {
                         const currentAnswers = answers.filter(answer => answer.question_id === question.id);
-                        return <Question key={question.id} question={question} answers={currentAnswers} index={i + 1} onDataChanged={onQuestionDataChanged} onAnswerAdded={onAnswerAdded} onAnswerChanged={onAnswerChanged} onDeleted={onQuestionDeleted} />
+                        return <Question key={question.id} question={question} answers={currentAnswers} index={i + 1} onDataChanged={onQuestionDataChanged} onAnswerAdded={onAnswerAdded} onAnswerChanged={onAnswerChanged} onCorrectAnswerChanged={onCorrectAnswerChanged} onDeleted={onQuestionDeleted} />
                     })}
                     <button type="button" className="btn btn_secondary mt-5" onClick={onQuestionAdded}>Добавить</button>
                 </div>

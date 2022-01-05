@@ -34,6 +34,9 @@
     .input-textarea {
         @apply block w-full shadow-sm border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500;
     }
+    .input-radio {
+        @apply border-gray-300 focus:ring-green-500 focus:border-green-500;
+    }
     .thumb {
         @apply overflow-hidden w-60 rounded-lg
     }

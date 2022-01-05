@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { TrashIcon } from '@heroicons/react/outline';
+import { TrashIcon, CheckIcon, XIcon } from '@heroicons/react/outline';
 
 const Question = props => {
     const [isActive, setIsActive] = useState(props.isActive || false);
@@ -38,9 +38,15 @@ const Question = props => {
                         <div className="col-span-3">
                             <label className="label">Ответы</label>
                             {props.answers.map(answer =>
-                                <div key={answer.id} className="mb-2">
-                                    <input type="text" className="input-text" value={answer.title} onChange={e => props.onAnswerChanged(answer.id, e)} />
-                                </div>   
+                                <div key={answer.id} className="mt-2 flex rounded-md shadow-sm">
+                                    <button type='button' className={`inline-flex items-center px-3 rounded-l-md text-white ${answer.isCorrect ? 'bg-green-400 hover:bg-green-500': 'bg-red-400 hover:bg-red-500'}`} onClick={() => props.onCorrectAnswerChanged(id, answer.id)}>
+                                        { answer.isCorrect ? <CheckIcon className='w-6 h-6' /> : <XIcon className='w-6 h-6' /> }
+                                    </button>
+                                    <input type="text" className="input-text flex-1 rounded-none z-10" value={answer.title} onChange={e => props.onAnswerChanged(answer.id, e)} />
+                                    <button type='button' className="inline-flex items-center px-3 rounded-r-md border border-l-0 border-gray-300 bg-gray-50 text-gray-500 transition hover:text-pink-500" onClick={() => props.onAnswerDeleted(answer.id)}>
+                                        <TrashIcon className="h-6 w-6"/>
+                                    </button>
+                                </div>
                             )}
                             <button type="button" className="btn btn_secondary mt-5" onClick={() => props.onAnswerAdded(id)}>Добавить</button>
                         </div>
