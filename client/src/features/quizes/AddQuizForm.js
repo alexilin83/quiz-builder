@@ -79,7 +79,7 @@ const AddQuizForm = () => {
     }
 
     return (
-        <form className="shadow rounded-md overflow-hidden">
+        <form className="rounded-md overflow-hidden">
             <div className="px-10 py-8 bg-white">
                 <h2>Параметры</h2>
                 <div className="grid grid-cols-6 gap-6 mb-12">

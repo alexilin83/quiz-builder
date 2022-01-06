@@ -11,8 +11,8 @@ const Question = props => {
     }
 
     return (
-        <div className="mb-3 bg-gray-50 rounded-lg overflow-hidden shadow">
-            <header className={`flex items-center px-5 py-5 bg-gray-100 cursor-pointer transition hover:bg-gray-200 ${isActive ? 'bg-green-400 text-white hover:bg-green-400': ''}`} onClick={onHeaderClicked}>
+        <div className="mb-5 bg-gray-50 rounded-lg overflow-hidden">
+            <header className={`flex items-center px-5 py-5 bg-gray-50 cursor-pointer transition hover:bg-gray-200 ${isActive ? 'bg-green-400 text-white hover:bg-green-400': ''}`} onClick={onHeaderClicked}>
                 <div className="flex-grow">
                     <h3 className="m-0 text-current">
                         <span className="inline-block pr-2 opacity-50">{props.index}</span>
@@ -30,9 +30,11 @@ const Question = props => {
                             <label className="label">Текст</label>
                             <textarea className="input-textarea h-28 mb-5" name="title" value={title} onChange={e => props.onDataChanged(id, e)} />
                             <label className="label">Изображение</label>
-                            <input type="text" className="input-text mb-2" name="image" value={image} onChange={e => props.onDataChanged(id, e)} />
-                            <div className="thumb">
-                                <img className="thumb__img" src={image} alt="" />
+                            <div className="flex items-center mb-5">
+                                <span className="thumb mr-2">
+                                    { image && <img className="thumb__img" src={image} alt="" /> }
+                                </span>
+                                <input type="text" className="input-text" name="image" value={image} onChange={e => props.onDataChanged(id, e)} />
                             </div>
                         </div>
                         <div className="col-span-3">
@@ -48,7 +50,7 @@ const Question = props => {
                                     </button>
                                 </div>
                             )}
-                            <button type="button" className="btn btn_secondary mt-5" onClick={() => props.onAnswerAdded(id)}>Добавить</button>
+                            <button type="button" className="btn btn_secondary mt-5" onClick={() => props.onAnswerAdded(id)}>Добавить ответ</button>
                         </div>
                     </div>
                 </div>

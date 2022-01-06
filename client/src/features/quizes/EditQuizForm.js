@@ -134,6 +134,16 @@ const EditQuizForm = () => {
         setAnswers(newAnswers);
     }
 
+    function onAnswerDeleted(id) {
+        let newAnswers = answers.filter(answer => {
+            if (answer.id !== id) {
+                return true;
+            }
+            return false;
+        });
+        setAnswers(newAnswers);
+    }
+
     const onSaveQuizClicked = async () => {
         if (title && description) {
             await updateQuiz({id, title, description, image, imageSource, questions});
@@ -145,7 +155,7 @@ const EditQuizForm = () => {
     if (isFetching) {
         content = <Spinner />
     } else if (isSuccess) {
-        content = <form className="shadow rounded-md overflow-hidden">
+        content = <form className="overflow-hidden border rounded-md">
             <div className="px-10 py-8 bg-white">
                 <h2>Параметры</h2>
                 <div className="grid grid-cols-6 gap-6 mb-12">
@@ -157,9 +167,11 @@ const EditQuizForm = () => {
                     </div>
                     <div className="col-span-3">
                         <label className="label">Главное изображение</label>
-                        <input type="text" className="input-text mb-2" value={image} onChange={onQuizImageChanged} />
-                        <div className="thumb mb-5">
-                            <img className="thumb__img" src={image} alt="" />
+                        <div className="flex items-center mb-5">
+                            <span className="thumb mr-2">
+                                { image && <img className="thumb__img" src={image} alt="" /> }
+                            </span>
+                            <input type="text" className="input-text" value={image} onChange={onQuizImageChanged} />
                         </div>
                         <label className="label">Источник изображения</label>
                         <input type="text" className="input-text" value={imageSource} onChange={onQuizImageSourceChanged} />
@@ -169,9 +181,9 @@ const EditQuizForm = () => {
                 <div>
                     {questions.map((question, i) => {
                         const currentAnswers = answers.filter(answer => answer.question_id === question.id);
-                        return <Question key={question.id} question={question} answers={currentAnswers} index={i + 1} onDataChanged={onQuestionDataChanged} onAnswerAdded={onAnswerAdded} onAnswerChanged={onAnswerChanged} onCorrectAnswerChanged={onCorrectAnswerChanged} onDeleted={onQuestionDeleted} />
+                        return <Question key={question.id} question={question} answers={currentAnswers} index={i + 1} onDataChanged={onQuestionDataChanged} onDeleted={onQuestionDeleted} onAnswerAdded={onAnswerAdded} onAnswerChanged={onAnswerChanged} onCorrectAnswerChanged={onCorrectAnswerChanged} onAnswerDeleted={onAnswerDeleted} />
                     })}
-                    <button type="button" className="btn btn_secondary mt-5" onClick={onQuestionAdded}>Добавить</button>
+                    <button type="button" className="btn btn_secondary" onClick={onQuestionAdded}>Добавить вопрос</button>
                 </div>
             </div>
             <div className="px-10 py-5 bg-gray-50">

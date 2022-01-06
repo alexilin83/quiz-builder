@@ -22,13 +22,13 @@
         @apply bg-gray-200 text-gray-500;
     }
     .btn {
-        @apply py-2 px-4 bg-green-400 text-white font-semibold rounded-md shadow-md transition-all hover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75;
+        @apply py-2 px-4 bg-green-400 text-white font-semibold rounded-md transition-all hover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75;
     }
     .btn_secondary {
         @apply bg-gray-400 hover:bg-gray-500 focus:ring-gray-400;
     }
     .label {
-        @apply block mb-1 text-sm font-medium text-gray-600;
+        @apply block mb-1 font-bold text-gray-600;
     }
     .input-text,
     .input-textarea {
@@ -38,9 +38,9 @@
         @apply border-gray-300 focus:ring-green-500 focus:border-green-500;
     }
     .thumb {
-        @apply overflow-hidden w-60 rounded-lg
+        @apply inline-flex flex-shrink-0 h-24 w-24 rounded overflow-hidden bg-gray-200
     }
     .thumb__img {
-        @apply object-cover
+        @apply w-full h-full object-cover
     }
 }

@@ -7,7 +7,7 @@ import { format, parseISO } from 'date-fns'
 let QuizExcerpt = ({quiz}) => {
     return (
         <div className="mb-3">
-            <Link to={`/quizes/${quiz.id}`} className="flex p-4 bg-white rounded-lg shadow">
+            <Link to={`/quizes/${quiz.id}`} className="flex p-4 bg-white rounded-lg">
                 <div className="overflow-hidden w-1/6 h-28 mr-3 bg-gray-300 rounded-lg">
                     {quiz.image && <img src={quiz.image} alt={quiz.imageSource} className="w-full h-full object-cover object-center" />}
                 </div>
