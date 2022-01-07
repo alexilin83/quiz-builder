@@ -2,14 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from "react-router-dom";
 import Spinner from '../../app/components/Spinner';
 import Question from '../questions/Question';
-import { useGetQuizQuery, useEditQuizMutation } from '../api/apiSlice';
+import { useGetQuizQuery, useUpdateQuizMutation } from '../api/apiSlice';
 import { nanoid } from '@reduxjs/toolkit';
 
 const EditQuizForm = () => {
     let { id } = useParams();
 
     const { data: quiz, isFetching, isSuccess} = useGetQuizQuery(id);
-    const [updateQuiz, { isLoading }] = useEditQuizMutation();
+    const [updateQuiz, { isLoading }] = useUpdateQuizMutation();
 
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
@@ -30,15 +30,17 @@ const EditQuizForm = () => {
 
             quiz.questions.forEach(question => {
                 questionsData.push({
+                    quiz_id: id,
                     id: question.id,
                     title: question.title,
-                    image: question.image
+                    image: question.image,
+                    imageSource: question.imageSource
                 });
 
                 question.answers.forEach(answer => {
                     answersData.push({
-                        id: answer.id,
                         question_id: answer.question_id,
+                        id: answer.id,
                         title: answer.title
                     })
                 });
@@ -47,7 +49,7 @@ const EditQuizForm = () => {
             setQuestions(questionsData);
             setAnswers(answersData);
         }
-    }, [quiz]);
+    }, [quiz, id]);
 
     function onQuizTitleChanged(e) {
         setTitle(e.target.value);
@@ -67,11 +69,11 @@ const EditQuizForm = () => {
 
     function onQuestionAdded() {
         setQuestions([...questions, {
+            quiz_id: id,
             id: nanoid(),
-            position: questions.length,
             title: 'Новый вопрос',
             image: '',
-            answers: []
+            imageSource: ''
         }]);
     }
 
@@ -98,14 +100,8 @@ const EditQuizForm = () => {
 
     function onAnswerAdded(questionId) {
         setAnswers([...answers, {
-            id: nanoid(),
             question_id: questionId,
-            position: answers.reduce(function(previousValue, currentValue, i, array) {
-                if (array[i].question_id === questionId) {
-                    return previousValue + 1;
-                }
-                return previousValue;
-            }, 1),
+            id: nanoid(),
             title: ''
         }]);
     }
@@ -146,14 +142,16 @@ const EditQuizForm = () => {
 
     const onSaveQuizClicked = async () => {
         if (title && description) {
-            await updateQuiz({id, title, description, image, imageSource, questions});
+            await updateQuiz({id, title, description, image, imageSource, questions, answers});
         }
     }
 
     let content;
 
     if (isFetching) {
-        content = <Spinner />
+        content = <div className="mx-auto w-10 h-10">
+                    <Spinner />
+                </div>
     } else if (isSuccess) {
         content = <form className="overflow-hidden border rounded-md">
             <div className="px-10 py-8 bg-white">
@@ -187,7 +185,14 @@ const EditQuizForm = () => {
                 </div>
             </div>
             <div className="px-10 py-5 bg-gray-50">
-                <button type="button" className="btn" onClick={onSaveQuizClicked}>Сохранить</button>
+                <button type="button" className="btn" onClick={onSaveQuizClicked} disabled={isLoading}>
+                    {isLoading &&
+                        <div className="w-5 h-5 mr-2">
+                            <Spinner />
+                        </div>
+                    }
+                    Сохранить
+                </button>
             </div>
         </form>
     }

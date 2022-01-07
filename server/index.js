@@ -69,7 +69,7 @@ app.post('/quizes', async (req, res) => {
     for (const question of questions) {
         const {position, title, image, imageSource, answers} = question;
         let lastQuestionInsertId;
-        await db.promise().query("INSERT INTO quizes_questions (quiz_id, postition, title, image, imageSurce) VALUES (?, ?, ?, ?, ?)", [lastQuizInsertId, position, title, image, imageSource])
+        await db.promise().query("INSERT INTO quizes_questions (quiz_id, position, title, image, imageSurce) VALUES (?, ?, ?, ?, ?)", [lastQuizInsertId, position, title, image, imageSource])
             .then(result => {
                 lastQuestionInsertId = result.insertId;
             })
@@ -81,7 +81,7 @@ app.post('/quizes', async (req, res) => {
             answersArr.push([lastQuestionInsertId, position, title]);
         });
 
-        await db.promise().query("INSERT INTO quizes_answers (question_id, postition, title) VALUES (?, ?, ?)", answersArr)
+        await db.promise().query("INSERT INTO quizes_answers (question_id, position, title) VALUES (?, ?, ?)", answersArr)
             .catch(console.log);
     }
 
@@ -98,7 +98,7 @@ app.post('/quizes', async (req, res) => {
 
 app.put('/quizes/:quizId', async (req, res) => {
     const quizId = req.params.quizId;
-    const {title, description, image, imageSource, questions} = req.body;
+    const { title, description, image, imageSource, questions, answers } = req.body;
 
     await db.promise().query("UPDATE quizes_items SET title = ?, description = ?, image = ?, imageSource = ? WHERE id = ?", [title, description, image, imageSource, quizId])
         .then(result => {
@@ -106,25 +106,46 @@ app.put('/quizes/:quizId', async (req, res) => {
         })
         .catch(console.log);
 
-    for (const question of questions) {
-        const {position, title, image, imageSource, answers} = question;
-        
-        await db.promise().query("UPDATE quizes_questions SET position = ?, title = ?, image = ?, imageSource = ? WHERE id = ?", [position, title, image, imageSource, question.id])
-            .then(result => {
-                
-            })
-            .catch(console.log);
+    for (const [index, question] of questions.entries()) {
+        const { quiz_id, title, image, imageSource, id } = question;
 
-        for (const answer of answers) {
-            const { id, position, title } = answer;
-            await db.promise().query("UPDATE quizes_answers SET position = ?, title = ? WHERE id = ?", [position, title, id])
+        if (typeof id === 'number') {
+            await db.promise().query("UPDATE quizes_questions SET quiz_id = ?, position = ?, title = ?, image = ?, imageSource = ? WHERE id = ?", [quiz_id, index, title, image, imageSource, id])
+                .then(result => {
+                    
+                })
+                .catch(console.log);
+        } else {
+            await db.promise().query("INSERT INTO quizes_questions (quiz_id, position, title, image, imageSource) VALUES (?, ?, ?, ?, ?)", [quiz_id, index, title, image, imageSource])
+                .then(result => {
+                    
+                })
                 .catch(console.log);
         }
     }
 
-    res.send({
-        status: 'success'
-    });
+    for (const [index, answer] of answers.entries()) {
+        const { question_id, title, id } = answer;
+        if (typeof id === 'number') {
+            await db.promise().query("UPDATE quizes_answers SET question_id = ?, position = ?, title = ? WHERE id = ?", [question_id, index, title, id])
+                .then(result => {
+                    console.log(result);    
+                })
+                .catch(console.log);
+        } else {
+            await db.promise().query("INSERT INTO quizes_answers (question_id, position, title) VALUES (?, ?, ?)", [question_id, index, title])
+                .then(result => {
+                    console.log(result);    
+                })
+                .catch(console.log);
+        }
+    }
+
+    setTimeout(() => {
+        res.send({
+            status: 'success'
+        });
+    }, 1000);
 });
 
 app.delete('/delete/:quizId', (req, res) => {

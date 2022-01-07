@@ -4,7 +4,7 @@ import { TrashIcon, CheckIcon, XIcon } from '@heroicons/react/outline';
 const Question = props => {
     const [isActive, setIsActive] = useState(props.isActive || false);
 
-    let { id, title, image } = props.question;
+    let { id, title, image, imageSource } = props.question;
 
     function onHeaderClicked() {
         setIsActive(!isActive);
@@ -36,6 +36,8 @@ const Question = props => {
                                 </span>
                                 <input type="text" className="input-text" name="image" value={image} onChange={e => props.onDataChanged(id, e)} />
                             </div>
+                            <label className="label">Источник изображения</label>
+                            <input type="text" className="input-text" name="imageSource" value={imageSource} onChange={e => props.onDataChanged(id, e)} />
                         </div>
                         <div className="col-span-3">
                             <label className="label">Ответы</label>

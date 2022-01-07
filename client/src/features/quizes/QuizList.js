@@ -34,7 +34,9 @@ const QuizList = () => {
     let content;
 
     if (isLoading) {
-        content = <Spinner />
+        content = <div className="mx-auto w-10 h-10">
+                    <Spinner />
+                </div>
     } else if (isSuccess) {
         content = sortedQuizes.map(quiz => (
             <QuizExcerpt key={quiz.id} quiz={quiz} />

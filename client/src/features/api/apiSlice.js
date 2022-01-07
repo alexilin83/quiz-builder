@@ -23,7 +23,7 @@ export const apiSlice = createApi({
             }),
             invalidatesTags: ['Quiz']
         }),
-        editQuiz: builder.mutation({
+        updateQuiz: builder.mutation({
             query: quiz => ({
                 url: `/quizes/${quiz.id}`,
                 method: 'PUT',
@@ -34,4 +34,4 @@ export const apiSlice = createApi({
     })
 });
 
-export const { useGetQuizesQuery, useGetQuizQuery, useAddNewQuizMutation, useEditQuizMutation } = apiSlice;
+export const { useGetQuizesQuery, useGetQuizQuery, useAddNewQuizMutation, useUpdateQuizMutation } = apiSlice;
