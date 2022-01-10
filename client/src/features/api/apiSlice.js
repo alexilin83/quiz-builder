@@ -15,7 +15,7 @@ export const apiSlice = createApi({
             query: quizId => `/quizes/${quizId}`,
             providesTags: (result, error, arg) => [{type: 'Quiz', id: arg}]
         }),
-        addNewQuiz: builder.mutation({
+        addQuiz: builder.mutation({
             query: initialQuiz => ({
                 url: '/quizes',
                 method: 'POST',
@@ -30,8 +30,16 @@ export const apiSlice = createApi({
                 body: quiz
             }),
             invalidatesTags: (result, error, arg) => [{type: 'Quiz', id: arg.id}]
+        }),
+        deleteQuiz: builder.mutation({
+            query: quiz => ({
+                url: `/quizes/${quiz.id}`,
+                method: 'DELETE',
+                body: quiz
+            }),
+            invalidatesTags: ['Quiz']
         })
     })
 });
 
-export const { useGetQuizesQuery, useGetQuizQuery, useAddNewQuizMutation, useUpdateQuizMutation } = apiSlice;
+export const { useGetQuizesQuery, useGetQuizQuery, useAddQuizMutation, useUpdateQuizMutation, useDeleteQuizMutation } = apiSlice;

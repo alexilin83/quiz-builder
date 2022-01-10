@@ -24,6 +24,7 @@ CREATE TABLE IF NOT EXISTS quizes_answers (
     question_id INT(11) NOT NULL,
     position INT(11) NOT NULL,
     title VARCHAR(100) NOT NULL DEFAULT '',
+    isCorrect BOOLEAN NOT NULL DEFAULT FALSE,
     PRIMARY KEY (id),
     FOREIGN KEY (question_id) REFERENCES quizes_questions(id) ON DELETE CASCADE
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8 COLLATE = utf8_general_ci;
@@ -114,11 +115,13 @@ INSERT INTO
     quizes_answers (
         question_id,
         position,
-        title
+        title,
+        isCorrect
     )
 VALUES
     (
         "1",
         "1",
-        "Answer 1"
+        "Answer 1",
+        false
     );

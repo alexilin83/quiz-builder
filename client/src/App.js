@@ -4,6 +4,7 @@ import Header from './app/Header';
 import QuizList from './features/quizes/QuizList';
 import AddQuizForm from './features/quizes/AddQuizForm';
 import EditQuizForm from './features/quizes/EditQuizForm';
+import NotFound from './app/components/NotFound';
 
 const App = () => (
     <React.Fragment>
@@ -13,6 +14,7 @@ const App = () => (
                 <Route path="/" element={<QuizList />} />
                 <Route path="/quizes/new" element={<AddQuizForm />} />
                 <Route path="/quizes/:id" element={<EditQuizForm />} />
+                <Route path="*" element={<NotFound />} />
             </Routes>
         </div>
     </React.Fragment>

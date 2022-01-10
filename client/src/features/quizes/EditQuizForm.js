@@ -1,15 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import Spinner from '../../app/components/Spinner';
 import Question from '../questions/Question';
-import { useGetQuizQuery, useUpdateQuizMutation } from '../api/apiSlice';
+import { useGetQuizQuery, useUpdateQuizMutation, useDeleteQuizMutation } from '../api/apiSlice';
 import { nanoid } from '@reduxjs/toolkit';
 
 const EditQuizForm = () => {
     let { id } = useParams();
 
-    const { data: quiz, isFetching, isSuccess} = useGetQuizQuery(id);
+    const { data: quiz, isFetching, isSuccess, error} = useGetQuizQuery(id);
     const [updateQuiz, { isLoading }] = useUpdateQuizMutation();
+    const [deleteQuiz, { isLoading: isDeleting, isSuccess: isDeletingSuccess }] = useDeleteQuizMutation();
 
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
@@ -17,6 +18,14 @@ const EditQuizForm = () => {
     const [imageSource, setImageSource] = useState('');
     const [questions, setQuestions] = useState([]);
     const [answers, setAnswers] = useState([]);
+
+    let navigate = useNavigate();
+
+    useEffect(() => {
+        if (isDeletingSuccess) {
+            navigate('/');
+        }
+    }, [isDeletingSuccess, navigate])
 
     useEffect(() => {
         if (quiz) {
@@ -34,14 +43,17 @@ const EditQuizForm = () => {
                     id: question.id,
                     title: question.title,
                     image: question.image,
-                    imageSource: question.imageSource
+                    imageSource: question.imageSource,
+                    isDeleted: false
                 });
 
                 question.answers.forEach(answer => {
                     answersData.push({
                         question_id: answer.question_id,
                         id: answer.id,
-                        title: answer.title
+                        title: answer.title,
+                        isCorrect: answer.isCorrect,
+                        isDeleted: false
                     })
                 });
             })
@@ -73,7 +85,8 @@ const EditQuizForm = () => {
             id: nanoid(),
             title: 'Новый вопрос',
             image: '',
-            imageSource: ''
+            imageSource: '',
+            isDeleted: false
         }]);
     }
 
@@ -89,11 +102,11 @@ const EditQuizForm = () => {
 
     function onQuestionDeleted(id, e) {
         e.stopPropagation();
-        let newQuestions = questions.filter(question => {
-            if (question.id !== id) {
-                return true;
+        let newQuestions = questions.map(question => {
+            if (question.id === id) {
+                return {...question, isDeleted: true};
             }
-            return false;
+            return question;
         });
         setQuestions(newQuestions);
     }
@@ -102,7 +115,9 @@ const EditQuizForm = () => {
         setAnswers([...answers, {
             question_id: questionId,
             id: nanoid(),
-            title: ''
+            title: '',
+            isCorrect: false,
+            isDeleted: false
         }]);
     }
 
@@ -131,24 +146,38 @@ const EditQuizForm = () => {
     }
 
     function onAnswerDeleted(id) {
-        let newAnswers = answers.filter(answer => {
-            if (answer.id !== id) {
-                return true;
+        let newAnswers = answers.map(answer => {
+            if (answer.id === id) {
+                return {...answer, isDeleted: true};
             }
-            return false;
+            return answer;
         });
         setAnswers(newAnswers);
     }
 
+    const canSave = [title, description].every(Boolean);
+
     const onSaveQuizClicked = async () => {
-        if (title && description) {
-            await updateQuiz({id, title, description, image, imageSource, questions, answers});
+        try {
+            await updateQuiz({id, title, description, image, imageSource, questions, answers}).unwrap();
+        } catch(error) {
+            console.error('Ошибка при сохранении теста: ', error);
+        }
+    }
+
+    const onDeleteQuizClicked = async () => {
+        try {
+            await deleteQuiz({id});
+        } catch(error) {
+            console.error('Ошибка при сохранении теста: ', error);
         }
     }
 
     let content;
 
-    if (isFetching) {
+    if (error) {
+        content = <h2 className='text-center'>{error.data.message}</h2>
+    } else if (isFetching) {
         content = <div className="mx-auto w-10 h-10">
                     <Spinner />
                 </div>
@@ -178,20 +207,30 @@ const EditQuizForm = () => {
                 <h2>Вопросы</h2>
                 <div>
                     {questions.map((question, i) => {
-                        const currentAnswers = answers.filter(answer => answer.question_id === question.id);
-                        return <Question key={question.id} question={question} answers={currentAnswers} index={i + 1} onDataChanged={onQuestionDataChanged} onDeleted={onQuestionDeleted} onAnswerAdded={onAnswerAdded} onAnswerChanged={onAnswerChanged} onCorrectAnswerChanged={onCorrectAnswerChanged} onAnswerDeleted={onAnswerDeleted} />
+                        if (!question.isDeleted) {
+                            const currentAnswers = answers.filter(answer => answer.question_id === question.id);
+                            return <Question key={question.id} question={question} answers={currentAnswers} index={i + 1} onDataChanged={onQuestionDataChanged} onDeleted={onQuestionDeleted} onAnswerAdded={onAnswerAdded} onAnswerChanged={onAnswerChanged} onCorrectAnswerChanged={onCorrectAnswerChanged} onAnswerDeleted={onAnswerDeleted} />
+                        }
                     })}
                     <button type="button" className="btn btn_secondary" onClick={onQuestionAdded}>Добавить вопрос</button>
                 </div>
             </div>
-            <div className="px-10 py-5 bg-gray-50">
-                <button type="button" className="btn" onClick={onSaveQuizClicked} disabled={isLoading}>
+            <div className="flex items-center px-10 py-5 bg-gray-50">
+                <button type="button" className="btn mr-3" onClick={onSaveQuizClicked} disabled={isLoading || !canSave}>
                     {isLoading &&
                         <div className="w-5 h-5 mr-2">
                             <Spinner />
                         </div>
                     }
                     Сохранить
+                </button>
+                <button type="button" className="btn btn_danger" onClick={onDeleteQuizClicked}>
+                    {isDeleting &&
+                        <div className="w-5 h-5 mr-2">
+                            <Spinner />
+                        </div>
+                    }
+                    Удалить
                 </button>
             </div>
         </form>

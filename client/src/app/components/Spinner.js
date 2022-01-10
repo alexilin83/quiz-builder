@@ -1,6 +1,6 @@
 import React from "react";
 
-const Spinner = (props) => {
+const Spinner = () => {
     return (
         <svg fill="none" className="w-full h-full stroke-current stroke-2 animate-spin" viewBox="0 0 38 38" xmlns="http://www.w3.org/2000/svg">
             <g transform="translate(1 1)">

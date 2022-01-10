@@ -34,25 +34,33 @@ app.get('/quizes/:quizId', async (req, res) => {
     let questions = [];
     let answers = [];
 
-    const [quizRows, quizFields] = await db.promise().query(`SELECT * FROM quizes_items WHERE id = ${quizId}`)
+    const [quizRows, quizFields] = await db.promise().query(`SELECT * FROM quizes_items WHERE id = ${quizId}`);
+
     quiz = quizRows[0];
-    const [questionsRows, questionFields] = await db.promise().query(`SELECT * FROM quizes_questions WHERE quiz_id = ${quizId}`);
-    questions = questionsRows;
-    for (const question of questions) {
-        const [rows, fields] = await db.promise().query(`SELECT * FROM quizes_answers WHERE question_id = ${question.id}`)
-        answers = answers.concat(rows);
-    }
-    questions = questions.map(question => {
-        question.answers = [];
-        answers.forEach(answer => {
-            if (answer.question_id === question.id) {
-                question.answers.push(answer);
-            }
+
+    if (quiz) {
+        const [questionsRows, questionFields] = await db.promise().query(`SELECT * FROM quizes_questions WHERE quiz_id = ${quizId}`);
+        questions = questionsRows;
+        for (const question of questions) {
+            const [rows, fields] = await db.promise().query(`SELECT * FROM quizes_answers WHERE question_id = ${question.id}`)
+            answers = answers.concat(rows);
+        }
+        questions = questions.map(question => {
+            question.answers = [];
+            answers.forEach(answer => {
+                if (answer.question_id === question.id) {
+                    question.answers.push(answer);
+                }
+            });
+            return question;
         });
-        return question;
-    });
-    quiz.questions = questions;
-    res.send(quiz);
+        quiz.questions = questions;
+        res.send(quiz);
+    } else {
+        res.status(404).send({
+            message: 'Данные не найдены'
+        });
+    }
 });
 
 app.post('/quizes', async (req, res) => {
@@ -66,8 +74,8 @@ app.post('/quizes', async (req, res) => {
         })
         .catch(console.log);
     
-    for (const question of questions) {
-        const {position, title, image, imageSource, answers} = question;
+    for (const [index, question] of questions.entries()) {
+        const {title, image, imageSource, answers} = question;
         let lastQuestionInsertId;
         await db.promise().query("INSERT INTO quizes_questions (quiz_id, position, title, image, imageSurce) VALUES (?, ?, ?, ?, ?)", [lastQuizInsertId, position, title, image, imageSource])
             .then(result => {
@@ -110,34 +118,65 @@ app.put('/quizes/:quizId', async (req, res) => {
         const { quiz_id, title, image, imageSource, id } = question;
 
         if (typeof id === 'number') {
-            await db.promise().query("UPDATE quizes_questions SET quiz_id = ?, position = ?, title = ?, image = ?, imageSource = ? WHERE id = ?", [quiz_id, index, title, image, imageSource, id])
-                .then(result => {
-                    
-                })
-                .catch(console.log);
+            if (question.isDeleted) {
+                await db.promise().query("DELETE FROM quizes_questions WHERE id = ?", [id])
+                    .then(result => {
+                    })
+                    .catch(console.log);
+            } else {
+                await db.promise().query("UPDATE quizes_questions SET quiz_id = ?, position = ?, title = ?, image = ?, imageSource = ? WHERE id = ?", [quiz_id, index, title, image, imageSource, id])
+                    .then(result => {
+                    })
+                    .catch(console.log);
+                for (const [index, answer] of answers.entries()) {
+                    if (answer.question_id === question.id) {
+                        const { question_id, title, isCorrect, id } = answer;
+                        if (typeof id === 'number') {
+                            if (answer.isDeleted) {
+                                await db.promise().query("DELETE FROM quizes_answers WHERE id = ?", [id])
+                                    .then(result => {
+                                    })
+                                    .catch(console.log);
+                            } else {
+                                await db.promise().query("UPDATE quizes_answers SET question_id = ?, position = ?, title = ?, isCorrect = ? WHERE id = ?", [question_id, index, title, isCorrect, id])
+                                    .then(result => {
+                                    })
+                                    .catch(console.log);
+                            }
+                        } else {
+                            await db.promise().query("INSERT INTO quizes_answers (question_id, position, title, isCorrect) VALUES (?, ?, ?, ?)", [question_id, index, title, isCorrect])
+                                .then(result => {
+                                })
+                                .catch(console.log);
+                        }
+                    }
+                }
+            }
         } else {
-            await db.promise().query("INSERT INTO quizes_questions (quiz_id, position, title, image, imageSource) VALUES (?, ?, ?, ?, ?)", [quiz_id, index, title, image, imageSource])
-                .then(result => {
-                    
-                })
-                .catch(console.log);
-        }
-    }
+            let lastQuestionInsertId;
 
-    for (const [index, answer] of answers.entries()) {
-        const { question_id, title, id } = answer;
-        if (typeof id === 'number') {
-            await db.promise().query("UPDATE quizes_answers SET question_id = ?, position = ?, title = ? WHERE id = ?", [question_id, index, title, id])
-                .then(result => {
-                    console.log(result);    
+            await db.promise().query("INSERT INTO quizes_questions (quiz_id, position, title, image, imageSource) VALUES (?, ?, ?, ?, ?)", [quiz_id, index, title, image, imageSource])
+                .then(([result, rows]) => {
+                    lastQuestionInsertId = result.insertId;
                 })
                 .catch(console.log);
-        } else {
-            await db.promise().query("INSERT INTO quizes_answers (question_id, position, title) VALUES (?, ?, ?)", [question_id, index, title])
-                .then(result => {
-                    console.log(result);    
-                })
-                .catch(console.log);
+
+            for (const [index, answer] of answers.entries()) {
+                if (answer.question_id === question.id) {
+                    const { title, isCorrect, id } = answer;
+                    if (typeof id === 'number') {
+                        await db.promise().query("UPDATE quizes_answers SET question_id = ?, position = ?, title = ?, isCorrect = ? WHERE id = ?", [lastQuestionInsertId, index, title, isCorrect, id])
+                            .then(result => {
+                            })
+                            .catch(console.log);
+                    } else {
+                        await db.promise().query("INSERT INTO quizes_answers (question_id, position, title, isCorrect) VALUES (?, ?, ?, ?)", [lastQuestionInsertId, index, title, isCorrect])
+                            .then(result => {
+                            })
+                            .catch(console.log);
+                    }
+                }
+            }
         }
     }
 
@@ -148,12 +187,19 @@ app.put('/quizes/:quizId', async (req, res) => {
     }, 1000);
 });
 
-app.delete('/delete/:quizId', (req, res) => {
+app.delete('/quizes/:quizId', (req, res) => {
     const quizId = req.params.quizId;
-
     const DeleteQuery = "DELETE FROM quizes_items WHERE id = ?";
     db.query(DeleteQuery, quizId, (err, result) => {
-        if (err) console.log(err);
+        if (err) {
+            console.log(err)
+        } else {
+            setTimeout(() => {
+                res.send({
+                    status: 'success'
+                });
+            }, 1000);
+        };
     });
 });
 
