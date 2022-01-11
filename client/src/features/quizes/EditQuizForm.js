@@ -4,6 +4,9 @@ import Spinner from '../../app/components/Spinner';
 import Question from '../questions/Question';
 import { useGetQuizQuery, useUpdateQuizMutation, useDeleteQuizMutation } from '../api/apiSlice';
 import { nanoid } from '@reduxjs/toolkit';
+import { SaveIcon, CodeIcon, TrashIcon } from '@heroicons/react/outline';
+import { PlusCircleIcon } from '@heroicons/react/solid';
+import Modal from '../../app/components/Modal';
 
 const EditQuizForm = () => {
     let { id } = useParams();
@@ -18,6 +21,8 @@ const EditQuizForm = () => {
     const [imageSource, setImageSource] = useState('');
     const [questions, setQuestions] = useState([]);
     const [answers, setAnswers] = useState([]);
+    
+    const [isCodeModalOpen, setIsCodeModalOpen] = useState(false);
 
     let navigate = useNavigate();
 
@@ -173,6 +178,10 @@ const EditQuizForm = () => {
         }
     }
 
+    function getCode() {
+        setIsCodeModalOpen(true);
+    }
+
     let content;
 
     if (error) {
@@ -182,58 +191,83 @@ const EditQuizForm = () => {
                     <Spinner />
                 </div>
     } else if (isSuccess) {
-        content = <form className="overflow-hidden border rounded-md">
-            <div className="px-10 py-8 bg-white">
-                <h2>Параметры</h2>
-                <div className="grid grid-cols-6 gap-6 mb-12">
-                    <div className="col-span-3">
-                        <label className="label">Заголовок</label>
-                        <input type="text" className="input-text mb-5" value={title} onChange={onQuizTitleChanged} />
-                        <label className="label">Описание</label>
-                        <textarea className="input-textarea h-40" value={description} onChange={onQuizDescriptionChanged} />
+        content = (
+            <React.Fragment>
+                <form className="overflow-hidden border rounded-md">
+                    <div className="px-10 py-8 bg-white">
+                        <div className="grid grid-cols-6 gap-6 mb-12">
+                            <div className="col-span-3">
+                                <label className="label">Заголовок</label>
+                                <input type="text" className="input-text mb-5" value={title} onChange={onQuizTitleChanged} />
+                                <label className="label">Описание</label>
+                                <textarea className="input-textarea h-40" value={description} onChange={onQuizDescriptionChanged} />
+                            </div>
+                            <div className="col-span-3">
+                                <label className="label">Главное изображение</label>
+                                <div className="flex items-center mb-5">
+                                    <span className="thumb mr-2">
+                                        { image && <img className="thumb__img" src={image} alt="" /> }
+                                    </span>
+                                    <input type="text" className="input-text" value={image} onChange={onQuizImageChanged} />
+                                </div>
+                                <label className="label">Источник изображения</label>
+                                <input type="text" className="input-text" value={imageSource} onChange={onQuizImageSourceChanged} />
+                            </div>
+                        </div>
+                        <h2>Вопросы</h2>
+                        <div>
+                            {questions.map((question, i) => {
+                                if (!question.isDeleted) {
+                                    const currentAnswers = answers.filter(answer => answer.question_id === question.id);
+                                    return <Question key={question.id} question={question} answers={currentAnswers} index={i + 1} onDataChanged={onQuestionDataChanged} onDeleted={onQuestionDeleted} onAnswerAdded={onAnswerAdded} onAnswerChanged={onAnswerChanged} onCorrectAnswerChanged={onCorrectAnswerChanged} onAnswerDeleted={onAnswerDeleted} />
+                                }
+                            })}
+                            <button type="button" className="btn btn_secondary" onClick={onQuestionAdded}>
+                                <PlusCircleIcon className='h-5 w-5 mr-2' />
+                                Добавить вопрос
+                            </button>
+                        </div>
                     </div>
-                    <div className="col-span-3">
-                        <label className="label">Главное изображение</label>
-                        <div className="flex items-center mb-5">
-                            <span className="thumb mr-2">
-                                { image && <img className="thumb__img" src={image} alt="" /> }
-                            </span>
-                            <input type="text" className="input-text" value={image} onChange={onQuizImageChanged} />
-                        </div>
-                        <label className="label">Источник изображения</label>
-                        <input type="text" className="input-text" value={imageSource} onChange={onQuizImageSourceChanged} />
+                    <div className="flex items-center px-10 py-5 bg-gray-50">
+                        <button type="button" className="btn mr-3" onClick={onSaveQuizClicked} disabled={isLoading || !canSave}>
+                            {isLoading ?
+                                <div className="w-5 h-5 mr-2">
+                                    <Spinner />
+                                </div>
+                                :
+                                <SaveIcon className='h-5 w-5 mr-2' />
+                            }
+                            Сохранить
+                        </button>
+                        <button type="button" className="btn btn_secondary mr-3" onClick={getCode}>
+                            <CodeIcon className='h-5 w-5 mr-2' />
+                            Получить код
+                        </button>
+                        <button type="button" className="btn btn_secondary text-red-600" onClick={onDeleteQuizClicked}>
+                            {isDeleting ?
+                                <div className="w-5 h-5 mr-2">
+                                    <Spinner />
+                                </div>
+                                :
+                                <TrashIcon className='h-5 w-5 mr-2' />
+                            }
+                            Удалить
+                        </button>
                     </div>
-                </div>
-                <h2>Вопросы</h2>
-                <div>
-                    {questions.map((question, i) => {
-                        if (!question.isDeleted) {
-                            const currentAnswers = answers.filter(answer => answer.question_id === question.id);
-                            return <Question key={question.id} question={question} answers={currentAnswers} index={i + 1} onDataChanged={onQuestionDataChanged} onDeleted={onQuestionDeleted} onAnswerAdded={onAnswerAdded} onAnswerChanged={onAnswerChanged} onCorrectAnswerChanged={onCorrectAnswerChanged} onAnswerDeleted={onAnswerDeleted} />
-                        }
-                    })}
-                    <button type="button" className="btn btn_secondary" onClick={onQuestionAdded}>Добавить вопрос</button>
-                </div>
-            </div>
-            <div className="flex items-center px-10 py-5 bg-gray-50">
-                <button type="button" className="btn mr-3" onClick={onSaveQuizClicked} disabled={isLoading || !canSave}>
-                    {isLoading &&
-                        <div className="w-5 h-5 mr-2">
-                            <Spinner />
-                        </div>
-                    }
-                    Сохранить
-                </button>
-                <button type="button" className="btn btn_danger" onClick={onDeleteQuizClicked}>
-                    {isDeleting &&
-                        <div className="w-5 h-5 mr-2">
-                            <Spinner />
-                        </div>
-                    }
-                    Удалить
-                </button>
-            </div>
-        </form>
+                </form>
+                <Modal isOpen={isCodeModalOpen} title="Код для вставки" description="Используйте этот код для отображения теста" onClose={() => setIsCodeModalOpen(false)}>
+                    <code className='block whitespace-pre overflow-x-scroll'>{`
+                        [HTML]
+                        <div data-test-id="" class="m24-test"></div>
+                        [/HTML]
+
+                        [HTML]
+                        <script src="/special/m24-test/main.js"></script>;
+                        [/HTML]
+                    `}</code>
+                </Modal>
+            </React.Fragment>
+        )
     }
 
     return <div>{content}</div>;

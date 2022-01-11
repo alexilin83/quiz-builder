@@ -7,7 +7,7 @@ export const apiSlice = createApi({
         getQuizes: builder.query({
             query: () => '/quizes',
             providesTags: (result = [], error, arg) => [
-                'Quiz',
+                { type: 'Quiz', id: 'LIST' },
                 ...result.map(({ id }) => ({type: 'Quiz', id}))
             ]
         }),
@@ -21,7 +21,7 @@ export const apiSlice = createApi({
                 method: 'POST',
                 body: initialQuiz
             }),
-            invalidatesTags: ['Quiz']
+            invalidatesTags: [{ type: 'Quiz', id: 'LIST' }]
         }),
         updateQuiz: builder.mutation({
             query: quiz => ({
@@ -37,7 +37,7 @@ export const apiSlice = createApi({
                 method: 'DELETE',
                 body: quiz
             }),
-            invalidatesTags: ['Quiz']
+            invalidatesTags: [{ type: 'Quiz', id: 'LIST' }]
         })
     })
 });

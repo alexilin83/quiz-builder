@@ -3,7 +3,7 @@ import { Link, NavLink } from "react-router-dom";
 import { TemplateIcon } from '@heroicons/react/outline';
 
 const Header = () => (
-    <div className="bg-gray-50 bg-opacity-50 border-b">
+    <div className="bg-gray-50 border-b">
         <div className="container mx-auto py-7">
             <div className="flex justify-between items-center">
                 <div className="flex w-2/6">

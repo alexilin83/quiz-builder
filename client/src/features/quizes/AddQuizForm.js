@@ -115,7 +115,7 @@ const AddQuizForm = () => {
             try {
                 await addQuiz({title, description, image, imageSource, questions, answers}).unwrap()
                     .then(payload => {
-                        // navigate(`/quizes/${payload.id}`);
+                        navigate(`/quizes/${payload.id}`);
                     });
             } catch (error) {
                 console.error('Ошибка при сохранении теста: ', error);
@@ -126,7 +126,6 @@ const AddQuizForm = () => {
     return (
         <form className="overflow-hidden border rounded-md">
             <div className="px-10 py-8 bg-white">
-                <h2>Параметры</h2>
                 <div className="grid grid-cols-6 gap-6 mb-12">
                     <div className="col-span-3">
                         <label className="label">Заголовок</label>
