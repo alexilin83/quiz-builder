@@ -1,5 +1,6 @@
 import { useState, useRef, Fragment, useEffect } from "react";
 import { Dialog, Transition } from "@headlessui/react";
+import Spinner from '../../app/components/Spinner';
 
 export default function Modal(props) {
     let [isOpen, setIsOpen] = useState(false);
@@ -43,15 +44,25 @@ export default function Modal(props) {
                         leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
                     >
                         <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-                            <header className="bg-gray-50 px-4 py-3 text-center">
+                            <header className={`p-4 text-center ${props.type === 'warning' ? 'bg-yellow-100' : props.type === 'error' ? 'bg-red-100' : 'bg-green-100'}`}>
                                 <Dialog.Title className="mb-1">{props.title}</Dialog.Title>
-                                <Dialog.Description className="font-bold text-gray-400">{props.description}</Dialog.Description>
+                                <Dialog.Description className="text-sm">{props.description}</Dialog.Description>
                             </header>
-                            <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                            <div className="bg-white px-5 py-5">
                                 {props.children}
                             </div>
-                            <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                            <div className="flex justify-end bg-gray-50 p-4">
                                 <button type="button" className="btn btn_secondary" onClick={() => handleClose()} ref={cancelButtonRef}>Закрыть</button>
+                                {props.onAction && (
+                                    <button type="button" className={`btn ml-3 ${props.type === 'warning' ? 'btn_danger' : 'btn_secondary'}`} disabled={props.actionProcess} onClick={props.onAction}>
+                                        {props.actionProcess &&
+                                            <div className="w-5 h-5 mr-2">
+                                                <Spinner />
+                                            </div>
+                                        }
+                                        Выполнить
+                                    </button>
+                                )}
                             </div>
                         </div>
                     </Transition.Child>

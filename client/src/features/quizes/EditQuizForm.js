@@ -22,7 +22,11 @@ const EditQuizForm = () => {
     const [questions, setQuestions] = useState([]);
     const [answers, setAnswers] = useState([]);
     
+    const [isQuizValidated, setIsQuizValidated] = useState(false);
     const [isCodeModalOpen, setIsCodeModalOpen] = useState(false);
+    const [quizErrors, setQuizErrors] = useState([]);
+    const [isErrorsModalOpen, setIsErrorsModalOpen] = useState(false);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
     let navigate = useNavigate();
 
@@ -160,17 +164,65 @@ const EditQuizForm = () => {
         setAnswers(newAnswers);
     }
 
-    const canSave = [title, description].every(Boolean);
+    function isQuizReady(form) {
+        const errors = [];
+        let isReady = true;
+        setIsQuizValidated(true);
 
-    const onSaveQuizClicked = async () => {
-        try {
-            await updateQuiz({id, title, description, image, imageSource, questions, answers}).unwrap();
-        } catch(error) {
-            console.error('Ошибка при сохранении теста: ', error);
+        if (!form.checkValidity()) {
+            isReady = false;
+            errors.push('<b>Заполните обязательные поля</b>');
+        }
+
+        if (questions.length < 1) {
+            isReady = false;
+            errors.push('<b>Добавьте вопросы</b> (тест должен иметь минимум один вопрос)');
+        }
+
+        let notEnoughAnswers = false;
+        let noCorrectAnswer = false;
+
+        questions.forEach(question => {
+            const currentAnswers = answers.filter(answer => answer.question_id === question.id);
+            if (currentAnswers.length < 2  && !notEnoughAnswers) {
+                isReady = false;
+                notEnoughAnswers = true;
+                errors.push('<b>Добавьте ответы</b> (вопрос должен иметь не меньше двух ответов)');
+            }
+            if (currentAnswers.length && !noCorrectAnswer) {
+                const correct = currentAnswers.filter(answer => answer.isCorrect);
+                if (!correct.length) {
+                    isReady = false;
+                    noCorrectAnswer = true;
+                    errors.push('<b>Отметьте правильные ответы</b> (вопрос должен иметь правильный ответ)');
+                }
+            }
+        });
+
+        setQuizErrors(errors);
+
+        return isReady;
+    };
+
+    async function handleSubmit(e) {
+        e.preventDefault();
+
+        if (isQuizReady(e.currentTarget)) {
+            try {
+                await updateQuiz({id, title, description, image, imageSource, questions, answers}).unwrap();
+            } catch (error) {
+                console.error('Ошибка сохранения: ', error);
+            }
+        } else {
+            setIsErrorsModalOpen(true);
         }
     }
 
-    const onDeleteQuizClicked = async () => {
+    function onDeleteQuizClicked() {
+        setIsDeleteModalOpen(true);
+    }
+
+    const handleDeleteQuiz = async () => {
         try {
             await deleteQuiz({id});
         } catch(error) {
@@ -193,11 +245,11 @@ const EditQuizForm = () => {
     } else if (isSuccess) {
         content = (
             <React.Fragment>
-                <form className="overflow-hidden border rounded-md">
+                <form noValidate className={`overflow-hidden border rounded-md ${isQuizValidated ? 'validated' : ''}`} onSubmit={e => {handleSubmit(e)}}>
                     <div className="px-10 py-8 bg-white">
                         <div className="grid grid-cols-6 gap-6 mb-12">
                             <div className="col-span-3">
-                                <label className="label">Заголовок</label>
+                                <label className="label">Заголовок <span className='text-red-500'>*</span></label>
                                 <input type="text" className="input-text mb-5" value={title} onChange={onQuizTitleChanged} />
                                 <label className="label">Описание</label>
                                 <textarea className="input-textarea h-40" value={description} onChange={onQuizDescriptionChanged} />
@@ -221,6 +273,7 @@ const EditQuizForm = () => {
                                     const currentAnswers = answers.filter(answer => answer.question_id === question.id);
                                     return <Question key={question.id} question={question} answers={currentAnswers} index={i + 1} onDataChanged={onQuestionDataChanged} onDeleted={onQuestionDeleted} onAnswerAdded={onAnswerAdded} onAnswerChanged={onAnswerChanged} onCorrectAnswerChanged={onCorrectAnswerChanged} onAnswerDeleted={onAnswerDeleted} />
                                 }
+                                return false;
                             })}
                             <button type="button" className="btn btn_secondary" onClick={onQuestionAdded}>
                                 <PlusCircleIcon className='h-5 w-5 mr-2' />
@@ -229,7 +282,7 @@ const EditQuizForm = () => {
                         </div>
                     </div>
                     <div className="flex items-center px-10 py-5 bg-gray-50">
-                        <button type="button" className="btn mr-3" onClick={onSaveQuizClicked} disabled={isLoading || !canSave}>
+                    <button type="submit" className="btn mr-3" disabled={isLoading}>
                             {isLoading ?
                                 <div className="w-5 h-5 mr-2">
                                     <Spinner />
@@ -239,32 +292,33 @@ const EditQuizForm = () => {
                             }
                             Сохранить
                         </button>
-                        <button type="button" className="btn btn_secondary mr-3" onClick={getCode}>
+                        <button type="button" className="btn btn_primary mr-3" onClick={getCode}>
                             <CodeIcon className='h-5 w-5 mr-2' />
                             Получить код
                         </button>
                         <button type="button" className="btn btn_secondary text-red-600" onClick={onDeleteQuizClicked}>
-                            {isDeleting ?
-                                <div className="w-5 h-5 mr-2">
-                                    <Spinner />
-                                </div>
-                                :
-                                <TrashIcon className='h-5 w-5 mr-2' />
-                            }
+                            <TrashIcon className='h-5 w-5 mr-2' />
                             Удалить
                         </button>
                     </div>
                 </form>
                 <Modal isOpen={isCodeModalOpen} title="Код для вставки" description="Используйте этот код для отображения теста" onClose={() => setIsCodeModalOpen(false)}>
-                    <code className='block whitespace-pre overflow-x-scroll'>{`
-                        [HTML]
-                        <div data-test-id="" class="m24-test"></div>
-                        [/HTML]
-
-                        [HTML]
-                        <script src="/special/m24-test/main.js"></script>;
-                        [/HTML]
-                    `}</code>
+                    <code className='block whitespace-pre overflow-x-auto text-sm'>{
+`[HTML]
+<div data-test-id="${id}" class="m24-test"></div>
+<script src="/special/m24-test/main.js"></script>;
+[/HTML]`
+                    }</code>
+                </Modal>
+                <Modal isOpen={isErrorsModalOpen} type="error" title="Не могу сохранить тест :(" description="Исправьте следующие ошибки и попробуйте еще раз" onClose={() => setIsErrorsModalOpen(false)}>
+                    <ul className='list-disc pl-5 text-red-500'>
+                        {quizErrors.map((error, i) => (
+                            <li key={i} dangerouslySetInnerHTML={{ __html: error }}></li>
+                        ))}
+                    </ul>
+                </Modal>
+                <Modal isOpen={isDeleteModalOpen} type="warning" title="Внимание!" description="Подтвердите удаление теста" actionProcess={isDeleting} onAction={() => handleDeleteQuiz()} onClose={() => setIsDeleteModalOpen(false)}>
+                    <p className='text-center'>Вы уверены что хотите удалить тест?</p>
                 </Modal>
             </React.Fragment>
         )

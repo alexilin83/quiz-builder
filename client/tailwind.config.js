@@ -1,3 +1,5 @@
+const plugin = require('tailwindcss/plugin');
+
 module.exports = {
     content: [
         "./public/**/*.html",
@@ -6,8 +8,23 @@ module.exports = {
     theme: {
         extend: {},
     },
+    variants: {
+        extend: {
+            opacity: ['disabled'],
+            cursor: ['disabled'],
+            pointerEvents: ['disabled'],
+            borderColor: ['invalid'],
+            ringColor: ['invalid'],
+        }
+    },
     plugins: [
         require('@tailwindcss/forms'),
-        require('@tailwindcss/typography')
+        plugin(function({ addVariant, e }) {
+            addVariant('invalid', ({ modifySelectors, separator }) => {
+                modifySelectors(({ className }) => {
+                    return `.${e(`invalid${separator}${className}`)}:invalid`
+                })
+            })
+        })
     ],
 };

@@ -4,6 +4,9 @@ import Question from '../questions/Question';
 import { useAddQuizMutation } from '../api/apiSlice';
 import { nanoid } from '@reduxjs/toolkit';
 import { useNavigate } from 'react-router-dom';
+import { SaveIcon } from '@heroicons/react/outline';
+import { PlusCircleIcon } from '@heroicons/react/solid';
+import Modal from '../../app/components/Modal';
 
 const AddQuizForm = () => {
     const [title, setTitle] = useState('');
@@ -12,6 +15,9 @@ const AddQuizForm = () => {
     const [imageSource, setImageSource] = useState('');
     const [questions, setQuestions] = useState([]);
     const [answers, setAnswers] = useState([]);
+    const [isQuizValidated, setIsQuizValidated] = useState(false);
+    const [quizErrors, setQuizErrors] = useState([]);
+    const [isErrorsModalOpen, setIsErrorsModalOpen] = useState(false);
 
     const [addQuiz, { isLoading }] = useAddQuizMutation();
 
@@ -36,7 +42,7 @@ const AddQuizForm = () => {
     function onQuestionAdded() {
         setQuestions([...questions, {
             id: nanoid(),
-            title: 'Новый вопрос',
+            title: '',
             image: '',
             imageSource: '',
             isDeleted: false
@@ -108,63 +114,119 @@ const AddQuizForm = () => {
         setAnswers(newAnswers);
     }
 
-    const canSave = [title, description].every(Boolean);
+    function isQuizReady(form) {
+        const errors = [];
+        let isReady = true;
+        setIsQuizValidated(true);
 
-    async function onSaveQuizClicked() {
-        if (canSave) {
+        if (!form.checkValidity()) {
+            isReady = false;
+            errors.push('<b>Заполните обязательные поля</b>');
+        }
+
+        if (questions.length < 1) {
+            isReady = false;
+            errors.push('<b>Добавьте вопросы</b> (тест должен иметь минимум один вопрос)');
+        }
+
+        let notEnoughAnswers = false;
+        let noCorrectAnswer = false;
+
+        questions.forEach(question => {
+            const currentAnswers = answers.filter(answer => answer.question_id === question.id);
+            if (currentAnswers.length < 2  && !notEnoughAnswers) {
+                isReady = false;
+                notEnoughAnswers = true;
+                errors.push('<b>Добавьте ответы</b> (вопрос должен иметь не меньше двух ответов)');
+            }
+            if (currentAnswers.length && !noCorrectAnswer) {
+                const correct = currentAnswers.filter(answer => answer.isCorrect);
+                if (!correct.length) {
+                    isReady = false;
+                    noCorrectAnswer = true;
+                    errors.push('<b>Отметьте правильные ответы</b> (вопрос должен иметь правильный ответ)');
+                }
+            }
+        });
+
+        setQuizErrors(errors);
+
+        return isReady;
+    };
+
+    async function handleSubmit(e) {
+        e.preventDefault();
+
+        if (isQuizReady(e.currentTarget)) {
             try {
                 await addQuiz({title, description, image, imageSource, questions, answers}).unwrap()
                     .then(payload => {
                         navigate(`/quizes/${payload.id}`);
                     });
             } catch (error) {
-                console.error('Ошибка при сохранении теста: ', error);
+                console.error('Ошибка сохранения: ', error);
             }
+        } else {
+            setIsErrorsModalOpen(true);
         }
     }
 
     return (
-        <form className="overflow-hidden border rounded-md">
-            <div className="px-10 py-8 bg-white">
-                <div className="grid grid-cols-6 gap-6 mb-12">
-                    <div className="col-span-3">
-                        <label className="label">Заголовок</label>
-                        <input type="text" className="input-text mb-5" value={title} onChange={onQuizTitleChanged} />
-                        <label className="label">Описание</label>
-                        <textarea className="input-textarea h-40" value={description} onChange={onQuizDescriptionChanged} />
-                    </div>
-                    <div className="col-span-3">
-                        <label className="label">Главное изображение</label>
-                        <div className="flex items-center mb-5">
-                            <span className="thumb mr-2">
-                                { image && <img className="thumb__img" src={image} alt="" /> }
-                            </span>
-                            <input type="text" className="input-text" value={image} onChange={onQuizImageChanged} />
+        <React.Fragment>
+            <form noValidate className={`overflow-hidden border rounded-md ${isQuizValidated ? 'validated' : ''}`} onSubmit={e => {handleSubmit(e)}}>
+                <div className="px-10 py-8 bg-white">
+                    <div className="grid grid-cols-6 gap-6 mb-12">
+                        <div className="col-span-3">
+                            <label className="label">Заголовок <span className='text-red-500'>*</span></label>
+                            <input type="text" className="input-text mb-5" value={title} onChange={onQuizTitleChanged} required />
+                            <label className="label">Описание</label>
+                            <textarea className="input-textarea h-40" value={description} onChange={onQuizDescriptionChanged} />
                         </div>
-                        <label className="label">Источник изображения</label>
-                        <input type="text" className="input-text" value={imageSource} onChange={onQuizImageSourceChanged} />
+                        <div className="col-span-3">
+                            <label className="label">Главное изображение</label>
+                            <div className="flex items-center mb-5">
+                                <span className="thumb mr-2">
+                                    { image && <img className="thumb__img" src={image} alt="" /> }
+                                </span>
+                                <input type="text" className="input-text" value={image} onChange={onQuizImageChanged} />
+                            </div>
+                            <label className="label">Источник изображения</label>
+                            <input type="text" className="input-text" value={imageSource} onChange={onQuizImageSourceChanged} />
+                        </div>
+                    </div>
+                    <h2>Вопросы <span className='text-red-500'>*</span></h2>
+                    <div>
+                        {questions.map((question, i) => {
+                            const currentAnswers = answers.filter(answer => answer.question_id === question.id);
+                            return <Question key={question.id} question={question} answers={currentAnswers} index={i + 1} onDataChanged={onQuestionDataChanged} onDeleted={onQuestionDeleted} onAnswerAdded={onAnswerAdded} onAnswerChanged={onAnswerChanged} onCorrectAnswerChanged={onCorrectAnswerChanged} onAnswerDeleted={onAnswerDeleted} />
+                        })}
+                        <button type="button" className="btn btn_secondary" onClick={onQuestionAdded}>
+                            <PlusCircleIcon className='h-5 w-5 mr-2' />
+                            Добавить вопрос
+                        </button>
                     </div>
                 </div>
-                <h2>Вопросы</h2>
-                <div>
-                    {questions.map((question, i) => {
-                        const currentAnswers = answers.filter(answer => answer.question_id === question.id);
-                        return <Question key={question.id} question={question} answers={currentAnswers} index={i + 1} onDataChanged={onQuestionDataChanged} onDeleted={onQuestionDeleted} onAnswerAdded={onAnswerAdded} onAnswerChanged={onAnswerChanged} onCorrectAnswerChanged={onCorrectAnswerChanged} onAnswerDeleted={onAnswerDeleted} />
-                    })}
-                    <button type="button" className="btn btn_secondary" onClick={onQuestionAdded}>Добавить вопрос</button>
+                <div className="px-10 py-5 bg-gray-50">
+                    <button type="submit" className="btn" disabled={isLoading}>
+                        {isLoading ?
+                            <div className="w-5 h-5 mr-2">
+                                <Spinner />
+                            </div>
+                            :
+                            <SaveIcon className='h-5 w-5 mr-2' />
+                        }
+                        Сохранить
+                    </button>
                 </div>
-            </div>
-            <div className="px-10 py-5 bg-gray-50">
-                <button type="button" className="btn" onClick={onSaveQuizClicked} disabled={isLoading || !canSave}>
-                    {isLoading &&
-                        <div className="w-5 h-5 mr-2">
-                            <Spinner />
-                        </div>
-                    }
-                    Сохранить
-                </button>
-            </div>
-        </form>
+            </form>
+            <Modal isOpen={isErrorsModalOpen} type="warning" title="Не могу сохранить тест :(" description="Исправьте следующие ошибки и попробуйте еще раз" onClose={() => setIsErrorsModalOpen(false)}>
+                <ul className='list-disc pl-5 text-red-500'>
+                    {quizErrors.map((error, i) => (
+                        <li key={i} dangerouslySetInnerHTML={{ __html: error }}></li>
+                    ))}
+                </ul>
+            </Modal>
+        </React.Fragment>
     )
 }
 
