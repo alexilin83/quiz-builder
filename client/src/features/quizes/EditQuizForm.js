@@ -2,10 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from "react-router-dom";
 import Spinner from '../../app/components/Spinner';
 import Question from '../questions/Question';
+import Result from '../results/Result';
 import { useGetQuizQuery, useUpdateQuizMutation, useDeleteQuizMutation } from '../api/apiSlice';
 import { nanoid } from '@reduxjs/toolkit';
 import { SaveIcon, CodeIcon, TrashIcon } from '@heroicons/react/outline';
-import { PlusCircleIcon } from '@heroicons/react/solid';
+import { AdjustmentsIcon, GiftIcon } from '@heroicons/react/outline';
+import { PlusCircleIcon, QuestionMarkCircleIcon } from '@heroicons/react/solid';
 import Modal from '../../app/components/Modal';
 
 const EditQuizForm = () => {
@@ -15,13 +17,14 @@ const EditQuizForm = () => {
     const [updateQuiz, { isLoading }] = useUpdateQuizMutation();
     const [deleteQuiz, { isLoading: isDeleting, isSuccess: isDeletingSuccess }] = useDeleteQuizMutation();
 
+    const [activeSection, setActiveSection] = useState(1);
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [image, setImage] = useState('');
     const [imageSource, setImageSource] = useState('');
     const [questions, setQuestions] = useState([]);
     const [answers, setAnswers] = useState([]);
-    
+    const [results, setResults] = useState([]);
     const [isQuizValidated, setIsQuizValidated] = useState(false);
     const [isCodeModalOpen, setIsCodeModalOpen] = useState(false);
     const [quizErrors, setQuizErrors] = useState([]);
@@ -45,6 +48,7 @@ const EditQuizForm = () => {
 
             let questionsData = [];
             let answersData = [];
+            let resultsData = [];
 
             quiz.questions.forEach(question => {
                 questionsData.push({
@@ -65,10 +69,21 @@ const EditQuizForm = () => {
                         isDeleted: false
                     })
                 });
-            })
+            });
+            quiz.results.forEach(result => {
+                resultsData.push({
+                    quiz_id: id,
+                    id: result.id,
+                    title: result.title,
+                    min: result.min,
+                    max: result.max,
+                    isDeleted: false
+                });
+            });
 
             setQuestions(questionsData);
             setAnswers(answersData);
+            setResults(resultsData);
         }
     }, [quiz, id]);
 
@@ -164,6 +179,37 @@ const EditQuizForm = () => {
         setAnswers(newAnswers);
     }
 
+    function onResultAdded() {
+        setResults([...results, {
+            id: nanoid(),
+            title: '',
+            min: '',
+            max: '',
+            isDeleted: false
+        }]);
+    }
+
+    function onResultDataChanged(id, e) {
+        let newResults = results.map(result => {
+            if (result.id === id) {
+                result[e.currentTarget.getAttribute('name')] = e.target.value;
+            }
+            return result;
+        });
+        setResults(newResults);
+    }
+
+    function onResultDeleted(id, e) {
+        e.stopPropagation();
+        let newResults = results.filter(result => {
+            if (result.id !== id) {
+                return {...result, isDeleted: true};
+            }
+            return false;
+        });
+        setResults(newResults);
+    }
+
     function isQuizReady(form) {
         const errors = [];
         let isReady = true;
@@ -209,7 +255,7 @@ const EditQuizForm = () => {
 
         if (isQuizReady(e.currentTarget)) {
             try {
-                await updateQuiz({id, title, description, image, imageSource, questions, answers}).unwrap();
+                await updateQuiz({id, title, description, image, imageSource, questions, answers, results}).unwrap();
             } catch (error) {
                 console.error('Ошибка сохранения: ', error);
             }
@@ -234,6 +280,12 @@ const EditQuizForm = () => {
         setIsCodeModalOpen(true);
     }
 
+    function handleTabsClick(e) {
+        if (e.target.classList.contains('nav__btn')) {
+            setActiveSection(parseInt(e.target.dataset.tab));
+        }
+    }
+
     let content;
 
     if (error) {
@@ -245,61 +297,111 @@ const EditQuizForm = () => {
     } else if (isSuccess) {
         content = (
             <React.Fragment>
-                <form noValidate className={`overflow-hidden border rounded-md ${isQuizValidated ? 'validated' : ''}`} onSubmit={e => {handleSubmit(e)}}>
-                    <div className="px-10 py-8 bg-white">
-                        <div className="grid grid-cols-6 gap-6 mb-12">
-                            <div className="col-span-3">
-                                <label className="label">Заголовок <span className='text-red-500'>*</span></label>
-                                <input type="text" className="input-text mb-5" value={title} onChange={onQuizTitleChanged} />
-                                <label className="label">Описание</label>
-                                <textarea className="input-textarea h-40" value={description} onChange={onQuizDescriptionChanged} />
-                            </div>
-                            <div className="col-span-3">
-                                <label className="label">Главное изображение</label>
-                                <div className="flex items-center mb-5">
-                                    <span className="thumb mr-2">
-                                        { image && <img className="thumb__img" src={image} alt="" /> }
-                                    </span>
-                                    <input type="text" className="input-text" value={image} onChange={onQuizImageChanged} />
-                                </div>
-                                <label className="label">Источник изображения</label>
-                                <input type="text" className="input-text" value={imageSource} onChange={onQuizImageSourceChanged} />
-                            </div>
+                <form noValidate className={`overflow-hidden bg-white border rounded-md ${isQuizValidated ? 'validated' : ''}`} onSubmit={e => {handleSubmit(e)}}>
+                    <div className="grid grid-cols-5 grid-rows-auto grid-flow-col">
+                        <div className="row-span-2 py-6 border-r">
+                            <ul onClick={e => handleTabsClick(e)}>
+                                <li>
+                                    <button type="button" data-tab="1" className={`nav__btn ${activeSection === 1 ? 'nav__btn_active' : ''}`}>
+                                        <AdjustmentsIcon className='nav__icon' />
+                                        Параметры
+                                    </button>
+                                </li>
+                                <li>
+                                    <button type="button" data-tab="2" className={`nav__btn ${activeSection === 2 ? 'nav__btn_active' : ''}`}>
+                                        <QuestionMarkCircleIcon className='nav__icon' />
+                                        Вопросы
+                                    </button>
+                                </li>
+                                <li>
+                                    <button type="button" data-tab="3" className={`nav__btn ${activeSection === 3 ? 'nav__btn_active' : ''}`}>
+                                        <GiftIcon className='nav__icon' />
+                                        Результаты
+                                    </button>
+                                </li>
+                            </ul>
                         </div>
-                        <h2>Вопросы</h2>
-                        <div>
-                            {questions.map((question, i) => {
-                                if (!question.isDeleted) {
-                                    const currentAnswers = answers.filter(answer => answer.question_id === question.id);
-                                    return <Question key={question.id} question={question} answers={currentAnswers} index={i + 1} onDataChanged={onQuestionDataChanged} onDeleted={onQuestionDeleted} onAnswerAdded={onAnswerAdded} onAnswerChanged={onAnswerChanged} onCorrectAnswerChanged={onCorrectAnswerChanged} onAnswerDeleted={onAnswerDeleted} />
+                        <div className="col-span-4 p-8">
+                            <fieldset className={`${activeSection === 1 ? 'block' : 'hidden'}`}>
+                                <div className="form-group pt-0">
+                                    <div className='form-group__label'>
+                                        <label>Заголовок <span className='text-red-500'>*</span></label>
+                                    </div>
+                                    <div className='form-group__inner'>
+                                        <input type="text" className="input-text" value={title} onChange={onQuizTitleChanged} required />
+                                    </div>
+                                </div>
+                                <div className="form-group">
+                                    <div className='form-group__label'>
+                                        <label>Описание</label>
+                                    </div>
+                                    <div className='form-group__inner'>
+                                        <textarea className="input-textarea h-40" value={description} onChange={onQuizDescriptionChanged} />
+                                    </div>
+                                </div>
+                                <div className="form-group">
+                                    <div className='form-group__label'>
+                                        <label>Главное изображение</label>
+                                    </div>
+                                    <div className='form-group__inner'>
+                                        <input type="text" className="input-text mb-2" value={image} onChange={onQuizImageChanged} />
+                                        <span className="thumb">
+                                            { image && <img className="thumb__img" src={image} alt="" /> }
+                                        </span>
+                                    </div>
+                                </div>
+                                <div className="form-group pb-0 border-b-0">
+                                    <div className='form-group__label'>
+                                        <label>Источник изображения</label>
+                                    </div>
+                                    <div className='form-group__inner'>
+                                        <input type="text" className="input-text" value={imageSource} onChange={onQuizImageSourceChanged} />
+                                    </div>
+                                </div>
+                            </fieldset>
+                            <fieldset className={`${activeSection === 2 ? 'block' : 'hidden'}`}>
+                                {questions.map((question, i) => {
+                                    if (!question.isDeleted) {
+                                        const currentAnswers = answers.filter(answer => answer.question_id === question.id);
+                                        return <Question key={question.id} question={question} answers={currentAnswers} index={i + 1} onDataChanged={onQuestionDataChanged} onDeleted={onQuestionDeleted} onAnswerAdded={onAnswerAdded} onAnswerChanged={onAnswerChanged} onCorrectAnswerChanged={onCorrectAnswerChanged} onAnswerDeleted={onAnswerDeleted} />
+                                    }
+                                    return false;
+                                })}
+                                <button type="button" className="btn btn_secondary" onClick={onQuestionAdded}>
+                                    <PlusCircleIcon className='h-5 w-5 mr-2' />
+                                    Добавить вопрос
+                                </button>
+                            </fieldset>
+                            <fieldset className={`${activeSection === 3 ? 'block' : 'hidden'}`}>
+                                {results.map((result, i) => (
+                                    <Result key={result.id} result={result} index={i + 1} max={questions.length} onDataChanged={onResultDataChanged} onDeleted={onResultDeleted} />
+                                ))}
+                                <button type="button" className="btn btn_secondary" onClick={onResultAdded}>
+                                    <PlusCircleIcon className='h-5 w-5 mr-2' />
+                                    Добавить результат
+                                </button>
+                            </fieldset>
+                        </div>
+                        <div className="flex col-span-4 justify-end px-8 py-5 border-t">
+                            <button type="submit" className="btn mr-3" disabled={isLoading}>
+                                {isLoading ?
+                                    <div className="w-5 h-5 mr-2">
+                                        <Spinner />
+                                    </div>
+                                    :
+                                    <SaveIcon className='h-5 w-5 mr-2' />
                                 }
-                                return false;
-                            })}
-                            <button type="button" className="btn btn_secondary" onClick={onQuestionAdded}>
-                                <PlusCircleIcon className='h-5 w-5 mr-2' />
-                                Добавить вопрос
+                                Сохранить
+                            </button>
+                            <button type="button" className="btn btn_primary mr-3" onClick={getCode}>
+                                <CodeIcon className='h-5 w-5 mr-2' />
+                                Получить код
+                            </button>
+                            <button type="button" className="btn btn_secondary text-red-600" onClick={onDeleteQuizClicked}>
+                                <TrashIcon className='h-5 w-5 mr-2' />
+                                Удалить
                             </button>
                         </div>
-                    </div>
-                    <div className="flex items-center px-10 py-5 bg-gray-50">
-                    <button type="submit" className="btn mr-3" disabled={isLoading}>
-                            {isLoading ?
-                                <div className="w-5 h-5 mr-2">
-                                    <Spinner />
-                                </div>
-                                :
-                                <SaveIcon className='h-5 w-5 mr-2' />
-                            }
-                            Сохранить
-                        </button>
-                        <button type="button" className="btn btn_primary mr-3" onClick={getCode}>
-                            <CodeIcon className='h-5 w-5 mr-2' />
-                            Получить код
-                        </button>
-                        <button type="button" className="btn btn_secondary text-red-600" onClick={onDeleteQuizClicked}>
-                            <TrashIcon className='h-5 w-5 mr-2' />
-                            Удалить
-                        </button>
                     </div>
                 </form>
                 <Modal isOpen={isCodeModalOpen} title="Код для вставки" description="Используйте этот код для отображения теста" onClose={() => setIsCodeModalOpen(false)}>
@@ -310,14 +412,14 @@ const EditQuizForm = () => {
 [/HTML]`
                     }</code>
                 </Modal>
-                <Modal isOpen={isErrorsModalOpen} type="error" title="Не могу сохранить тест :(" description="Исправьте следующие ошибки и попробуйте еще раз" onClose={() => setIsErrorsModalOpen(false)}>
-                    <ul className='list-disc pl-5 text-red-500'>
+                <Modal isOpen={isErrorsModalOpen} type="error" title="Ошибка сохранения" onClose={() => setIsErrorsModalOpen(false)}>
+                    <ul className='list-disc pl-4'>
                         {quizErrors.map((error, i) => (
                             <li key={i} dangerouslySetInnerHTML={{ __html: error }}></li>
                         ))}
                     </ul>
                 </Modal>
-                <Modal isOpen={isDeleteModalOpen} type="warning" title="Внимание!" description="Подтвердите удаление теста" actionProcess={isDeleting} onAction={() => handleDeleteQuiz()} onClose={() => setIsDeleteModalOpen(false)}>
+                <Modal isOpen={isDeleteModalOpen} type="warning" title="Внимание!" actionProcess={isDeleting} onAction={() => handleDeleteQuiz()} onClose={() => setIsDeleteModalOpen(false)}>
                     <p className='text-center'>Вы уверены что хотите удалить тест?</p>
                 </Modal>
             </React.Fragment>

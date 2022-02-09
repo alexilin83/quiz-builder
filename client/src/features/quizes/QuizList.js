@@ -6,19 +6,17 @@ import { format, parseISO } from 'date-fns'
 
 let QuizExcerpt = ({quiz}) => {
     return (
-        <div className="mb-3">
-            <Link to={`/quizes/${quiz.id}`} className="flex p-4 bg-white text-current rounded-lg hover:text-current">
-                <div className="overflow-hidden w-1/6 h-28 mr-3 bg-gray-300 rounded-lg">
-                    {quiz.image && <img src={quiz.image} alt={quiz.imageSource} className="w-full h-full object-cover object-center" />}
-                </div>
-                <div className="">
-                    <h3>{quiz.title}</h3>
-                    <small>
-                        Дата создания: {format(parseISO(quiz.date), 'dd.MM.yyyy HH:mm')}
-                    </small>
-                </div>
-            </Link>
-        </div>
+        <Link to={`/quizes/${quiz.id}`} className="flex w-2/4 p-4 bg-white text-current rounded-lg transform transition hover:bg-gray-200">
+            <div className="overflow-hidden w-2/6 h-28 mr-3 bg-gray-300 rounded-lg">
+                {quiz.image && <img src={quiz.image} alt={quiz.imageSource} className="w-full h-full object-cover object-center" />}
+            </div>
+            <div className="">
+                <h3>{quiz.title}</h3>
+                <small>
+                    Дата создания: {format(parseISO(quiz.date), 'dd.MM.yyyy HH:mm')}
+                </small>
+            </div>
+        </Link>
     )
 }
 
@@ -34,18 +32,39 @@ const QuizList = () => {
     let content;
 
     if (isLoading) {
-        content = <div className="mx-auto w-10 h-10">
-                    <Spinner />
-                </div>
+        content = (
+            <div className="mx-auto w-10 h-10">
+                <Spinner />
+            </div>
+        )
     } else if (isSuccess) {
-        content = sortedQuizes.map(quiz => (
-            <QuizExcerpt key={quiz.id} quiz={quiz} />
-        ));
+        if (sortedQuizes.length) {
+            content = (
+                <div className="flex space-x-4">
+                    {
+                        sortedQuizes.map(quiz => (
+                            <QuizExcerpt key={quiz.id} quiz={quiz} />
+                        ))
+                    }
+                </div>
+            )
+        } else {
+            content = (
+                <div className='text-center'>
+                    <h2>Тесты отсутствуют</h2>
+                    <p>Перейдите <Link to="/quizes/new">сюда</Link> для создания теста.</p>
+                </div>
+            );
+        }
     } else if (isError) {
-        content = <h2>{error.error}</h2>
+        content = <h2 className='text-center'>{error.error}</h2>
     }
 
-    return <div>{content}</div>;
+    return (
+        <React.Fragment>
+            {content}
+        </React.Fragment>
+    );
 }
 
 export default QuizList;

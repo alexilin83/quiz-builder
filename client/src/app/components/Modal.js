@@ -1,6 +1,7 @@
 import { useState, useRef, Fragment, useEffect } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import Spinner from '../../app/components/Spinner';
+import { ExclamationIcon } from '@heroicons/react/outline';
 
 export default function Modal(props) {
     let [isOpen, setIsOpen] = useState(false);
@@ -43,13 +44,24 @@ export default function Modal(props) {
                         leaveFrom="opacity-100 translate-y-0 sm:scale-100"
                         leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
                     >
-                        <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-                            <header className={`p-4 text-center ${props.type === 'warning' ? 'bg-yellow-100' : props.type === 'error' ? 'bg-red-100' : 'bg-green-100'}`}>
-                                <Dialog.Title className="mb-1">{props.title}</Dialog.Title>
-                                <Dialog.Description className="text-sm">{props.description}</Dialog.Description>
-                            </header>
-                            <div className="bg-white px-5 py-5">
-                                {props.children}
+                        <div className="inline-block align-middle max-w-lg w-full my-8 bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all">
+                            <div className="p-6">
+                                <div className="flex items-start">
+                                    {props.type === 'warning' &&
+                                        <div className="flex flex-shrink-0 items-center justify-center h-10 w-10 mr-4 rounded-full bg-yellow-100 text-yellow-500">
+                                            <ExclamationIcon className="w-6 h-6" />
+                                        </div>
+                                    }
+                                    {props.type === 'error' &&
+                                        <div className="flex flex-shrink-0 items-center justify-center h-10 w-10 mr-4 rounded-full bg-red-100 text-red-500">
+                                            <ExclamationIcon className="w-6 h-6" />
+                                        </div>
+                                    }
+                                    <div className="pt-1">
+                                        <Dialog.Title className="mb-3">{props.title}</Dialog.Title>
+                                        {props.children}
+                                    </div>
+                                </div>
                             </div>
                             <div className="flex justify-end bg-gray-50 p-4">
                                 <button type="button" className="btn btn_secondary" onClick={() => handleClose()} ref={cancelButtonRef}>Закрыть</button>

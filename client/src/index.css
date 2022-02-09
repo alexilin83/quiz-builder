@@ -4,28 +4,40 @@
 
 @layer base {
     body {
-        @apply bg-gray-100 text-gray-500;
+        @apply bg-gray-50 text-gray-500;
     }
     h2 {
-        @apply m-0 mb-5 font-bold text-xl text-gray-600;
+        @apply m-0 mb-5 font-bold text-lg text-gray-600;
     }
     h3 {
         @apply font-bold text-gray-600;
     }
     a {
-        @apply text-green-400;
+        @apply text-teal-400;
     }
 }
 
 @layer components {
     .nav-link {
-        @apply mx-1 px-4 py-2 rounded-md font-bold text-gray-400 transition-all hover:bg-gray-200;
+        @apply mx-1 px-4 py-2 rounded-md font-bold text-gray-500 transition-all hover:bg-teal-500 hover:text-white;
     }
     .nav-link_active {
-        @apply bg-gray-200 text-gray-500;
+        @apply bg-teal-50 text-teal-600 hover:bg-teal-50 hover:text-teal-600;
+    }
+    .nav__btn {
+        @apply flex w-full items-center p-3 font-bold transition-all hover:bg-gray-100;
+    }
+    .nav__btn * {
+        @apply pointer-events-none;
+    }
+    .nav__btn_active {
+        @apply bg-gray-400 text-white hover:bg-gray-400;
+    }
+    .nav__icon {
+        @apply w-6 h-6 opacity-40 mr-3;
     }
     .btn {
-        @apply inline-flex items-center py-2 px-4 bg-green-400 border border-transparent shadow-sm text-white text-sm rounded-md transition-all hover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75 disabled:opacity-50 disabled:cursor-default disabled:pointer-events-none;
+        @apply inline-flex items-center py-2 px-4 bg-teal-400 border border-transparent shadow-sm text-white text-sm rounded-md transition-all hover:bg-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:ring-opacity-75 disabled:opacity-50 disabled:cursor-default disabled:pointer-events-none;
     }
     .btn_secondary {
         @apply bg-white border-gray-300 text-gray-600 hover:bg-gray-50 focus:ring-gray-200;
@@ -36,12 +48,18 @@
     .btn_danger {
         @apply bg-red-400 border-red-400 hover:bg-red-500 focus:ring-red-400;
     }
-    .label {
-        @apply block mb-1 font-bold text-gray-600;
+    .form-group {
+        @apply flex py-5 border-b border-gray-100;
+    }
+    .form-group__label {
+        @apply w-2/6 pr-5 pt-2;
+    }
+    .form-group__inner {
+        @apply w-4/6;
     }
     .input-text,
     .input-textarea {
-        @apply block w-full shadow-sm border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500;
+        @apply block w-full max-w-lg shadow-sm border-gray-300 rounded-md focus:ring-teal-500 focus:border-teal-500;
     }
     .validated .input-text:invalid,
     .validated .input-textarea:invalid {
